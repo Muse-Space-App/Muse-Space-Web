@@ -56,6 +56,17 @@
     color: #3b2cc4 !important;
     box-shadow: none !important;
   }
+  
+  html:not(.dark) [class*="bg-indigo-600"]:hover,
+  html:not(.dark) [class*="bg-[#3d2db5]"]:hover {
+    background-color: var(--indigo-700) !important;
+    color: #ffffff !important;
+  }
+
+  /* Global interactive element cursors */
+  a, button, [role="button"], input[type="submit"], input[type="button"] {
+    cursor: pointer !important;
+  }
 
   body {
     background-color: #f8fafc;
