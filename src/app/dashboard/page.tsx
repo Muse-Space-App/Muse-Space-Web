@@ -19,20 +19,7 @@ const MASONRY_BREAKPOINTS = {
   640: 1
 };
 
-const MY_EVENTS = [
-  { id: '1', title: 'Galactic Art Showcase', date: 'OCT 24', time: '8:00 PM EST', type: 'Virtual Exhibition', status: "RSVP'd" },
-  { id: '2', title: 'Neon Dreams: Cyberpunk Workshop', date: 'NOV 02', time: '5:00 PM EST', type: 'Interactive Workshop', status: "Ticket Purchased" }
-];
 
-const MY_GROUPS = [
-  { id: 1, name: "Digital Pioneers", members: 1205, role: "Member", icon: "palette" },
-  { id: 2, name: "Cyberpunk Enthusiasts", members: 42, role: "Admin", icon: "terminal" }
-];
-
-const MY_COMMISSIONS = [
-  { id: 101, artist: "Astro Creator", type: "Custom Avatar", status: "In Progress", date: "OCT 20" },
-  { id: 102, artist: "Neon Ninja", type: "Stream Overlay", status: "Pending", date: "OCT 23" }
-];
 
 export default function Dashboard() {
 
@@ -44,6 +31,8 @@ export default function Dashboard() {
   
   const [stats, setStats] = useState<any>(null);
   const [commissions, setCommissions] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [groups, setGroups] = useState<any[]>([]);
   
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -54,8 +43,14 @@ export default function Dashboard() {
         const statsRes = await api.get('/dashboard/stats');
         if (statsRes.data?.success) setStats(statsRes.data.data);
 
-        const commsRes = await api.get('/commissions/requested');
+        const [commsRes, eventsRes, groupsRes] = await Promise.all([
+          api.get('/commissions/requested'),
+          api.get('/events'),
+          api.get('/groups')
+        ]);
         if (commsRes.data?.success) setCommissions(commsRes.data.data.items || []);
+        if (eventsRes.data?.success) setEvents(eventsRes.data.data.items || eventsRes.data.data || []);
+        if (groupsRes.data?.success) setGroups(groupsRes.data.data.items || groupsRes.data.data || []);
       } catch (err) {
         console.error('Failed to load dashboard data', err);
       }
@@ -67,9 +62,9 @@ export default function Dashboard() {
   }, [user]);
 
   useEffect(() => {
-    if (searchParams.get('ticket') === 'true' && MY_EVENTS.length > 0) {
+    if (searchParams.get('ticket') === 'true' && events.length > 0) {
       // Auto open the first event ticket
-      setShowTicketModal(MY_EVENTS[0]);
+      setShowTicketModal(events[0]);
       // Remove query param to clean URL
       const newParams = new URLSearchParams(searchParams.toString());
       newParams.delete('ticket');
@@ -128,15 +123,19 @@ export default function Dashboard() {
               <Link href="/groups" className="text-indigo-600 dark:text-indigo-400 text-sm font-bold hover:underline">Find more</Link>
             </div>
             
-            {MY_EVENTS.length > 0 ? (
+            {events.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {MY_EVENTS.map((event) => (
+                {events.map((event) => {
+                  const d = new Date(event.startDateUtc);
+                  const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+                  const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                  return (
                   <div key={event.id} className="bg-white/50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 rounded-2xl p-6 hover:border-indigo-500/30 transition-all flex flex-col gap-4 relative overflow-hidden group">
                     <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
                     
                     <div className="flex justify-between items-start">
                       <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wider">
-                        {event.status}
+                        Registered
                       </span>
                     </div>
                     <div>
@@ -144,18 +143,18 @@ export default function Dashboard() {
                       <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
                         <p className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-[16px]">calendar_month</span>
-                          {event.date} • {event.time}
+                          {dateStr} • {timeStr}
                         </p>
                         <p className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-[16px]">videocam</span>
-                          {event.type}
+                          {event.isOnline ? 'Online Event' : event.location || 'In-Person'}
                         </p>
                       </div>
                     </div>
                     
                     <div className="flex gap-3 mt-auto pt-4 border-t border-slate-100 dark:border-white/5">
                       <button 
-                        onClick={() => setShowTicketModal(event)}
+                        onClick={() => setShowTicketModal({ ...event, date: dateStr, time: timeStr, type: event.isOnline ? 'Online Event' : event.location })}
                         className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-[0_0_10px_rgba(79,70,229,0.2)]"
                       >
                         <span className="material-symbols-outlined text-[18px]">local_activity</span>
@@ -166,7 +165,7 @@ export default function Dashboard() {
                       </Link>
                     </div>
                   </div>
-                ))}
+                )})}
               </div>
             ) : (
               <div className="bg-slate-100 dark:bg-slate-900/30 border border-dashed border-slate-300 dark:border-white/20 rounded-2xl p-8 text-center">
@@ -223,28 +222,13 @@ export default function Dashboard() {
                           </Link>
                         </td>
                       </tr>
-                    )) : MY_COMMISSIONS.map((comm) => (
-                      <tr key={comm.id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                        <td className="p-4 font-bold text-slate-900 dark:text-white">{comm.artist}</td>
-                        <td className="p-4 text-slate-600 dark:text-slate-300">{comm.type}</td>
-                        <td className="p-4 text-slate-500 dark:text-slate-400 text-sm">{comm.date}</td>
-                        <td className="p-4">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                            comm.status === 'In Progress' 
-                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
-                              : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
-                          }`}>
-                            {comm.status === 'In Progress' ? <span className="material-symbols-outlined text-[14px]">sync</span> : <span className="material-symbols-outlined text-[14px]">pending</span>}
-                            {comm.status}
-                          </span>
-                        </td>
-                        <td className="p-4 text-right">
-                          <button className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium text-sm transition-colors">
-                            View Thread
-                          </button>
+                    )) : (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-slate-500">
+                          No commission requests found.
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -263,25 +247,28 @@ export default function Dashboard() {
           </div>
           
           <div className="bg-white/50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 rounded-2xl p-6 space-y-4">
-            {MY_GROUPS.map((group) => (
+            {groups.map((group) => (
               <Link href={`/groups/${group.id}`} key={group.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-white/10">
-                <div className="w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-indigo-600 dark:text-indigo-400">{group.icon}</span>
+                <div className="w-12 h-12 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shrink-0 overflow-hidden">
+                  {group.avatarUrl ? <img src={group.avatarUrl} alt={group.name} className="w-full h-full object-cover" /> : <span className="material-symbols-outlined text-indigo-600 dark:text-indigo-400">group</span>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-slate-900 dark:text-white font-bold truncate">{group.name}</h3>
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-xs text-slate-500 flex items-center gap-1">
                       <span className="material-symbols-outlined text-[14px]">group</span>
-                      {group.members.toLocaleString()}
+                      {group.memberCount?.toLocaleString() || 0}
                     </span>
                     <span className="text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-500/20 px-2 py-0.5 rounded">
-                      {group.role}
+                      Member
                     </span>
                   </div>
                 </div>
               </Link>
             ))}
+            {groups.length === 0 && (
+              <div className="p-4 text-center text-slate-500 text-sm">You haven't joined any groups yet.</div>
+            )}
             
             <Link href="/groups" className="mt-4 w-full py-3 border-2 border-dashed border-slate-300 dark:border-white/20 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:border-indigo-500 hover:text-indigo-600 dark:hover:border-indigo-400 dark:hover:text-indigo-400 transition-colors flex items-center justify-center gap-2">
               <span className="material-symbols-outlined">explore</span>

@@ -46,7 +46,7 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     try {
       // Fetch from Feed API (Home feed usually)
-      const response = await api.get('/feed/home');
+      const response = await api.get('/feed');
       // If it's a paginated response like ArtworkFeedResponse
       if (response.data && response.data.items) {
         setArtworks(response.data.items);
@@ -70,7 +70,7 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
     // Optimistic UI Update
     setArtworks(prev => prev.map(art => art.id === id ? { ...art, isLiked: !art.isLiked, likeCount: art.isLiked ? art.likeCount - 1 : art.likeCount + 1 } : art));
     try {
-      await api.post(`/interaction/like/${id}`);
+      await api.post(`/artworks/${id}/like`);
     } catch (e) {
       // Revert on failure
       setArtworks(prev => prev.map(art => art.id === id ? { ...art, isLiked: !art.isLiked, likeCount: art.isLiked ? art.likeCount - 1 : art.likeCount + 1 } : art));
@@ -81,7 +81,7 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
     // Optimistic UI Update
     setArtworks(prev => prev.map(art => art.id === id ? { ...art, isBookmarked: !art.isBookmarked } : art));
     try {
-      await api.post(`/interaction/bookmark/${id}`);
+      await api.post(`/artworks/${id}/bookmark`);
     } catch (e) {
       // Revert
       setArtworks(prev => prev.map(art => art.id === id ? { ...art, isBookmarked: !art.isBookmarked } : art));
@@ -92,7 +92,7 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
     // Optimistic UI Update across all artworks by this artist
     setArtworks(prev => prev.map(art => art.creatorId === artistId ? { ...art, isFollowingCreator: !art.isFollowingCreator } : art));
     try {
-      await api.post(`/social/follow/${artistId}`);
+      await api.post(`/users/${artistId}/follow`);
     } catch (e) {
       // Revert
       setArtworks(prev => prev.map(art => art.creatorId === artistId ? { ...art, isFollowingCreator: !art.isFollowingCreator } : art));

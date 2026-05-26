@@ -35,8 +35,8 @@ export default function GroupsPage() {
     const fetchData = async () => {
       try {
         const [groupRes, eventRes] = await Promise.all([
-          api.get('/group'),
-          api.get('/event')
+          api.get('/groups'),
+          api.get('/events')
         ]);
         if (groupRes.data?.success) setGroups(groupRes.data.data.items || groupRes.data.data);
         if (eventRes.data?.success) setEvents(eventRes.data.data.items || eventRes.data.data);
@@ -51,7 +51,7 @@ export default function GroupsPage() {
 
   const handleJoin = async (id: number) => {
     try {
-      await api.post(`/group/${id}/join`);
+      await api.post(`/groups/${id}/join`);
       alert("Join request sent or joined successfully!");
     } catch (e) {
       console.error(e);
@@ -64,7 +64,7 @@ export default function GroupsPage() {
     if (!newGroupName.trim() || !newGroupDesc.trim()) return;
 
     try {
-      const response = await api.post('/group', {
+      const response = await api.post('/groups', {
         name: newGroupName,
         description: newGroupDesc,
         isPrivate: false

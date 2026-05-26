@@ -16,6 +16,9 @@ export interface UserProfileResponse {
   lastName: string;
   bio: string;
   profileImageUrl: string;
+  avatarUrl?: string;
+  isFollowing?: boolean;
+  followerCount?: number;
 }
 
 export interface TagResponse {

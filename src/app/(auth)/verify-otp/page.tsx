@@ -63,7 +63,7 @@ export default function VerifyOtpPage() {
           return;
         }
 
-        const response = await api.post('/auth/verify-otp', {
+        const response = await api.post('/auth/otp/verify-email', {
           email,
           otpCode: otpValue,
           type: "EmailVerification"
