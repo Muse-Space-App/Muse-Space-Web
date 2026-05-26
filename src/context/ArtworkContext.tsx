@@ -48,8 +48,8 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
       // Fetch from Feed API (Home feed usually)
       const response = await api.get('/feed');
       // If it's a paginated response like ArtworkFeedResponse
-      if (response.data && response.data.items) {
-        setArtworks(response.data.items);
+      if (response.data?.isSuccess && response.data?.data?.items) {
+        setArtworks(response.data.data.items);
       } else {
         // Fallback or empty
         setArtworks([]);
