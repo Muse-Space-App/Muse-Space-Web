@@ -4,7 +4,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import * as signalR from '@microsoft/signalr';
 import { useAuth } from './AuthContext';
 import api from '@/lib/api';
-import { NotificationResponse } from '@/app/search/page'; // or import from types
 
 export interface INotificationResponse {
   id: number;
