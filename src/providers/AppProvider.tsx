@@ -63,21 +63,19 @@ export default function AppProvider({ children }: { children: ReactNode }) {
   const searchQuery = searchParams.get('q') || '';
   const isAuthRoute = pathname?.startsWith('/login') || pathname?.startsWith('/register') || pathname?.startsWith('/verify-otp');
 
-  if (isAuthRoute) {
-    return (
-      <main className="min-h-screen w-full flex items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070')] bg-cover bg-center">
-        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-0"></div>
-        <div className="z-10 w-full max-w-md">
-          {children}
-        </div>
-      </main>
-    );
-  }
-
   return (
     <AuthProvider>
       <NotificationProvider>
-        <AppLayout>{children}</AppLayout>
+        {isAuthRoute ? (
+          <main className="min-h-screen w-full flex items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070')] bg-cover bg-center">
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-0"></div>
+            <div className="z-10 w-full max-w-md">
+              {children}
+            </div>
+          </main>
+        ) : (
+          <AppLayout>{children}</AppLayout>
+        )}
       </NotificationProvider>
     </AuthProvider>
   );
@@ -133,13 +131,15 @@ function AppLayout({ children }: { children: ReactNode }) {
             <span className="material-symbols-outlined">groups</span>
             <span>{t('layout.nav_groups', 'Groups & Events')}</span>
           </Link>
-          <Link 
-            href="/dashboard" 
-            className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-300 ${pathname?.startsWith('/dashboard') ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-l-4 border-indigo-500' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-          >
-            <span className="material-symbols-outlined">dashboard</span>
-            <span>{t('layout.nav_activities', 'Dashboard')}</span>
-          </Link>
+          {isAuthenticated && (
+            <Link 
+              href="/dashboard" 
+              className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-300 ${pathname?.startsWith('/dashboard') ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-l-4 border-indigo-500' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+            >
+              <span className="material-symbols-outlined">dashboard</span>
+              <span>{t('layout.nav_activities', 'Dashboard')}</span>
+            </Link>
+          )}
           <Link 
             href="/search" 
             className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-300 ${pathname?.startsWith('/search') ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-l-4 border-indigo-500' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'}`}

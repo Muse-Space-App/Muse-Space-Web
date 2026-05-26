@@ -81,9 +81,15 @@ function SearchContent() {
 
   return (
     <div className="max-w-7xl mx-auto py-8 animate-[fadeIn_0.3s_ease-out]">
-      <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-8 font-['Space_Grotesk']">
-        Search Results for "{query}"
-      </h1>
+      {query ? (
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-8 font-['Space_Grotesk']">
+          Search Results for "{query}"
+        </h1>
+      ) : (
+        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-8 font-['Space_Grotesk']">
+          Search Explore
+        </h1>
+      )}
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -132,9 +138,14 @@ function SearchContent() {
           <p className="text-slate-500 mt-2">Try adjusting your search terms.</p>
         </div>
       ) : (
-        <div className="text-center py-20">
-          <span className="material-symbols-outlined text-6xl text-slate-300 dark:text-slate-600 mb-4 block">search</span>
-          <h2 className="text-2xl font-bold dark:text-white">Type something to search</h2>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+          <div className="w-24 h-24 bg-indigo-50 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(79,70,229,0.15)]">
+            <span className="material-symbols-outlined text-5xl text-indigo-500">search</span>
+          </div>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white font-['Space_Grotesk'] mb-3">Discover the Galaxy</h2>
+          <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+            Find cosmic creations, talented artists, and inspiring collections. Try searching for "digital art", "portraits", or your favorite creator's name.
+          </p>
         </div>
       )}
 
