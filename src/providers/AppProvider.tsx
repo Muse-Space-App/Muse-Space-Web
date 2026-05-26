@@ -31,6 +31,14 @@ if (!i18n.isInitialized) {
   });
 }
 
+const MENU_ITEMS = [
+  { path: '/', labelKey: 'layout.nav_home', defaultLabel: 'Home', icon: 'home', exactMatch: true, matchPrefixes: ['/'] },
+  { path: '/commissions', labelKey: 'layout.nav_commissions', defaultLabel: 'Commissions', icon: 'stadium', exactMatch: false, matchPrefixes: ['/commissions'] },
+  { path: '/groups', labelKey: 'layout.nav_groups', defaultLabel: 'Groups & Events', icon: 'groups', exactMatch: false, matchPrefixes: ['/groups', '/events'] },
+  { path: '/dashboard', labelKey: 'layout.nav_activities', defaultLabel: 'Dashboard', icon: 'dashboard', exactMatch: false, matchPrefixes: ['/dashboard'], requiresAuth: true },
+  { path: '/search', labelKey: 'layout.nav_search', defaultLabel: 'Search', icon: 'search', exactMatch: false, matchPrefixes: ['/search'] }
+];
+
 export default function AppProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const pathname = usePathname();
@@ -110,43 +118,24 @@ function AppLayout({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex-1 flex flex-col gap-2">
-          <Link 
-            href="/" 
-            className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-300 ${pathname === '/' ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-l-4 border-indigo-500' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-          >
-            <span className="material-symbols-outlined">home</span>
-            <span>{t('layout.nav_home', 'Home')}</span>
-          </Link>
-          <Link 
-            href="/commissions" 
-            className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-300 ${pathname?.startsWith('/commissions') ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-l-4 border-indigo-500' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-          >
-            <span className="material-symbols-outlined">stadium</span>
-            <span>{t('layout.nav_commissions', 'Commissions')}</span>
-          </Link>
-          <Link 
-            href="/groups" 
-            className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-300 ${pathname?.startsWith('/groups') || pathname?.startsWith('/events') ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-l-4 border-indigo-500' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-          >
-            <span className="material-symbols-outlined">groups</span>
-            <span>{t('layout.nav_groups', 'Groups & Events')}</span>
-          </Link>
-          {isAuthenticated && (
-            <Link 
-              href="/dashboard" 
-              className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-300 ${pathname?.startsWith('/dashboard') ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-l-4 border-indigo-500' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-            >
-              <span className="material-symbols-outlined">dashboard</span>
-              <span>{t('layout.nav_activities', 'Dashboard')}</span>
-            </Link>
-          )}
-          <Link 
-            href="/search" 
-            className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-300 ${pathname?.startsWith('/search') ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-l-4 border-indigo-500' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'}`}
-          >
-            <span className="material-symbols-outlined">search</span>
-            <span>Search</span>
-          </Link>
+          {MENU_ITEMS.map((item) => {
+            if (item.requiresAuth && !isAuthenticated) return null;
+            
+            const isActive = item.exactMatch 
+              ? pathname === item.path 
+              : item.matchPrefixes.some(prefix => pathname?.startsWith(prefix));
+
+            return (
+              <Link 
+                key={item.path}
+                href={item.path} 
+                className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-300 ${isActive ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border-l-4 border-indigo-500' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5'}`}
+              >
+                <span className="material-symbols-outlined">{item.icon}</span>
+                <span>{t(item.labelKey, item.defaultLabel)}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="pt-10 space-y-4">
