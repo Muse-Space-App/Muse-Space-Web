@@ -14,8 +14,9 @@ export default function CommissionsPage() {
         // Fetch users using the search endpoint
         const res = await api.get('/search?query=');
         if (res.data?.success && res.data?.data?.users) {
-          // In a real app we'd filter by role or 'isAcceptingCommissions' flag
-          setArtists(res.data.data.users);
+          // Filter by 'isAcceptingCommissions' flag
+          const acceptingArtists = res.data.data.users.filter((u: any) => u.isAcceptingCommissions);
+          setArtists(acceptingArtists);
         }
       } catch (err) {
         console.error("Failed to load artists", err);

@@ -19,6 +19,7 @@ export interface UserProfileResponse {
   avatarUrl?: string;
   isFollowing?: boolean;
   followerCount?: number;
+  isAcceptingCommissions?: boolean;
 }
 
 export interface TagResponse {

@@ -2,11 +2,17 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'react-hot-toast';
 
 export default function Settings() {
   const { i18n } = useTranslation();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, user } = useAuth();
   const [profilePhoto, setProfilePhoto] = useState('https://lh3.googleusercontent.com/aida-public/AB6AXuDWmy5Q4ovxN33Th-UGPn98NuvbII0lCPqmH900zYzCXD2mP6WnfsQYg5CyX8rf4tFNtD3EAcK7_vZu3h2MU_Gzi_YsraaLm89EtjkvWOclLf5f7DaiQ6yFiTF5zMb4P_tGqBFSwGcuJdefW5lWWa40l0ig7vMzrnaymQADnuGMjTvqBGxuaz_Ds9JqY1j1zgLWtXElciJZpSH4VQ1En6cYqRdHG1FU-2qPyfeqf01eITZydAYUO7SFxaTcPpAabjipbkR5ZqVqdRs');
+
+  // Commissions State
+  const [isAcceptingCommissions, setIsAcceptingCommissions] = useState(false);
+  const [isTogglingCommissions, setIsTogglingCommissions] = useState(false);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -25,9 +31,10 @@ export default function Settings() {
     accountHolder: ''
   });
 
-  // Fetch Payment Settings on mount if authenticated
+  // Fetch Profile & Payment Settings on mount if authenticated
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user?.id) {
+      // Fetch Payment Settings
       axios.get('/api/artist/settings')
         .then(res => {
           if (res.data) {
@@ -39,8 +46,39 @@ export default function Settings() {
           }
         })
         .catch(err => console.error("Failed to fetch artist payment settings", err));
+
+      // Fetch User Profile
+      import('@/lib/api').then(({ default: api }) => {
+        api.get(`/users/${user.id}/profile`)
+          .then(res => {
+            if (res.data?.success) {
+              setIsAcceptingCommissions(res.data.data.isAcceptingCommissions || false);
+            }
+          })
+          .catch(err => console.error("Failed to fetch profile", err));
+      });
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
+
+  const handleToggleCommissions = async () => {
+    setIsTogglingCommissions(true);
+    try {
+      const { default: api } = await import('@/lib/api');
+      const res = await api.put('/users/profile/commissions-status', {
+        isAcceptingCommissions: !isAcceptingCommissions
+      });
+      if (res.data?.success) {
+        setIsAcceptingCommissions(!isAcceptingCommissions);
+        toast.success(res.data.message || 'Status updated');
+      } else {
+        toast.error(res.data?.message || 'Failed to update status');
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to update status');
+    } finally {
+      setIsTogglingCommissions(false);
+    }
+  };
 
   const isPaymentDataValid = paymentData.bankName.trim() !== '' && paymentData.accountNumber.trim() !== '' && paymentData.accountHolder.trim() !== '';
 
@@ -137,6 +175,30 @@ export default function Settings() {
                   </button>
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Commission Status */}
+          <section className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm animate-[fadeIn_0.3s_ease-out]">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+              <span className="material-symbols-outlined text-indigo-500">storefront</span>
+              Commission Status
+            </h2>
+            
+            <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-5 rounded-xl border border-slate-200 dark:border-white/5">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Accept Commissions</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Allow users to request and pay for custom artworks. You must have at least 5 artworks posted to enable this.
+                </p>
+              </div>
+              <button 
+                onClick={handleToggleCommissions}
+                disabled={isTogglingCommissions}
+                className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors ${isAcceptingCommissions ? 'bg-indigo-500' : 'bg-slate-300 dark:bg-slate-600'} disabled:opacity-50`}
+              >
+                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${isAcceptingCommissions ? 'translate-x-8' : 'translate-x-1'}`} />
+              </button>
             </div>
           </section>
 

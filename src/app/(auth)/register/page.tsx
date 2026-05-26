@@ -138,7 +138,7 @@ export default function RegisterPage() {
         <button 
           type="submit"
           disabled={!authEmail || !authUsername || !authPassword || !authConfirmPassword || authPassword !== authConfirmPassword || !agreeTerms || isLoading}
-          className="w-full py-3 mt-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] disabled:shadow-none transition-all hover:scale-[1.02] disabled:hover:scale-100 flex justify-center items-center"
+          className="w-full py-3 mt-4 bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_40px_rgba(79,70,229,0.7)] disabled:shadow-none transition-all hover:scale-[1.02] disabled:hover:scale-100 flex justify-center items-center"
         >
           {isLoading ? <span className="material-symbols-outlined animate-spin">refresh</span> : 'Sign Up'}
         </button>
