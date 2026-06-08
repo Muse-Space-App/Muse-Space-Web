@@ -23,7 +23,7 @@ function HomeContent() {
   const query = (searchParams.get('q') || '').toLowerCase();
   const postId = searchParams.get('post');
 
-  const { artworks: allArtworks } = useArtwork();
+  const { artworks: allArtworks, isLoading: isContextLoading } = useArtwork();
 
   const [filteredArtworks, setFilteredArtworks] = useState<Artwork[]>(allArtworks);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,17 +55,18 @@ function HomeContent() {
   }, [query, allArtworks]);
 
   const lastArtworkRef = useCallback((node: HTMLDivElement | null) => {
-    if (isLoading || isFetchingMore || query) return;
+    if (isLoading || isContextLoading || isFetchingMore || query) return;
     if (observer.current) observer.current.disconnect();
 
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && filteredArtworks.length < 50) {
+      if (entries[0].isIntersecting) {
         setIsFetchingMore(true);
         setTimeout(() => {
           setFilteredArtworks(prev => {
-            const newArtworks = allArtworks.map(art => ({
+            const shuffled = [...allArtworks].sort(() => 0.5 - Math.random());
+            const newArtworks = shuffled.map((art, idx) => ({
               ...art,
-              id: art.id + prev.length * 1000,
+              id: art.id + prev.length * 1000 + idx,
             }));
             return [...prev, ...newArtworks];
           });
@@ -75,7 +76,7 @@ function HomeContent() {
     });
 
     if (node) observer.current.observe(node);
-  }, [isLoading, isFetchingMore, query, filteredArtworks.length, allArtworks]);
+  }, [isLoading, isContextLoading, isFetchingMore, query, allArtworks]);
 
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-8">
@@ -115,7 +116,7 @@ function HomeContent() {
         </div>
       )}
 
-      {isLoading ? (
+      {isLoading || isContextLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-80 rounded-2xl bg-slate-200 animate-pulse dark:bg-slate-800" />
