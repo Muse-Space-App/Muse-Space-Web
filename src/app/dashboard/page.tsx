@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Masonry from 'react-masonry-css';
+import PinterestGrid from '@/components/PinterestGrid';
 import { useArtwork } from '@/context/ArtworkContext';
 import ArtworkCard from '@/components/ArtworkCard';
 import ArtworkDetailModal from '@/components/ArtworkDetailModal';
@@ -325,17 +326,14 @@ export default function Dashboard() {
         </div>
 
         {displayedArtworks.length > 0 ? (
-          <Masonry
-            breakpointCols={MASONRY_BREAKPOINTS}
-            className="flex w-auto gap-6"
-            columnClassName="flex flex-col gap-6"
-          >
-            {displayedArtworks.map((item, index) => (
+          <PinterestGrid
+            items={displayedArtworks}
+            renderItem={(item) => (
               <div key={item.id}>
                 <ArtworkCard artwork={item} onClick={setSelectedArtwork} />
               </div>
-            ))}
-          </Masonry>
+            )}
+          />
         ) : (
           <div className="bg-slate-100 dark:bg-slate-900/30 border border-dashed border-slate-300 dark:border-white/20 rounded-2xl p-12 text-center">
             <span className="material-symbols-outlined text-4xl text-slate-400 mb-2">

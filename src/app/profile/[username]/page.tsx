@@ -3,6 +3,7 @@ import { useParams } from 'next/navigation';
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Masonry from 'react-masonry-css';
+import PinterestGrid from '@/components/PinterestGrid';
 import { useArtwork, type Artwork } from '@/context/ArtworkContext';
 import ArtworkCard from '@/components/ArtworkCard';
 import ArtworkDetailModal from '@/components/ArtworkDetailModal';
@@ -306,17 +307,14 @@ export default function ProfilePage() {
               Portfolio Gallery
             </h2>
             {artistArtworks.length > 0 ? (
-              <Masonry
-                breakpointCols={MASONRY_BREAKPOINTS}
-                className="flex w-auto gap-4"
-                columnClassName="flex flex-col gap-4"
-              >
-                {artistArtworks.map((item, index) => (
+              <PinterestGrid
+                items={artistArtworks}
+                renderItem={(item) => (
                   <div key={item.id}>
                     <ArtworkCard artwork={item} onClick={setSelectedArtwork} />
                   </div>
-                ))}
-              </Masonry>
+                )}
+              />
             ) : (
               <div className="text-center py-20 bg-white/50 dark:bg-slate-900/30 border border-slate-200 dark:border-white/10 rounded-3xl">
                 <span className="material-symbols-outlined text-6xl text-slate-400 dark:text-slate-500 mb-4">

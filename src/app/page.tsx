@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import Masonry from 'react-masonry-css';
+import PinterestGrid from '@/components/PinterestGrid';
 import ArtworkCard from '@/components/ArtworkCard';
 import ArtworkDetailModal from '@/components/ArtworkDetailModal';
 import { useArtwork, type Artwork } from '@/context/ArtworkContext';
@@ -125,20 +126,17 @@ function HomeContent() {
       ) : filteredArtworks.length > 0 ? (
         <div className="mb-10">
           {query && <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-xl"><span className="material-symbols-outlined text-amber-500">photo_library</span> Images</h3>}
-          <Masonry
-            breakpointCols={MASONRY_BREAKPOINTS}
-            className="flex w-auto gap-6"
-            columnClassName="flex flex-col gap-6"
-          >
-            {filteredArtworks.map((item, index) => (
+          <PinterestGrid
+            items={filteredArtworks}
+            renderItem={(item, index) => (
               <div
                 key={item.id}
                 ref={filteredArtworks.length === index + 1 ? lastArtworkRef : null}
               >
                 <ArtworkCard artwork={item} onClick={setSelectedArtwork} />
               </div>
-            ))}
-          </Masonry>
+            )}
+          />
 
           {isFetchingMore && (
             <div className="py-10 flex justify-center">
