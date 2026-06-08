@@ -89,7 +89,7 @@ export default function CommentSection({ artworkId }: { artworkId: number }) {
             <button
               type="submit"
               disabled={isSubmitting || !newComment.trim()}
-              className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg font-bold text-sm transition-colors"
+              className="px-6 py-2 bg-indigo-600 hover:brightness-110 disabled:opacity-50 text-white rounded-lg font-bold text-sm transition-all"
             >
               {isSubmitting ? "Posting..." : "Post"}
             </button>

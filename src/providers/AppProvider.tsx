@@ -107,6 +107,14 @@ function AppLayout({ children }: { children: ReactNode }) {
   const { notifications, unreadCount, markAsRead } = useNotifications();
   const searchQuery = searchParams.get('q') || '';
 
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
   return (
     <>
       {/* Sidebar Navigation */}
@@ -156,9 +164,14 @@ function AppLayout({ children }: { children: ReactNode }) {
       {/* Top Navigation Bar */}
       <header className="fixed top-0 left-64 right-0 h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 z-50 flex justify-between items-center px-8 shadow-[0_0_15px_rgba(61,45,181,0.05)] dark:shadow-[0_0_15px_rgba(61,45,181,0.1)] transition-colors duration-300">
         <div className="flex items-center gap-6 flex-1">
-          <form className="relative max-w-md w-full group" onSubmit={(e) => { e.preventDefault(); router.push(`/search?q=${encodeURIComponent(searchQuery)}`); }}>
+          <form className="relative max-w-md w-full group" onSubmit={(e) => { 
+            e.preventDefault(); 
+            const val = (document.getElementById('navSearchInput') as HTMLInputElement)?.value;
+            router.push(`/search?q=${encodeURIComponent(val || '')}`); 
+          }}>
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 dark:group-focus-within:text-indigo-400 transition-colors">search</span>
             <input
+              id="navSearchInput"
               className="w-full bg-slate-100/80 dark:bg-slate-900/50 border border-slate-300 dark:border-white/10 rounded-full py-2.5 pl-12 pr-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-500 dark:placeholder:text-slate-400"
               placeholder={t('layout.search_placeholder', 'Search artworks, tags, users...')}
               type="text"
