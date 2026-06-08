@@ -306,19 +306,16 @@ export default function ProfilePage() {
               Portfolio Gallery
             </h2>
             {artistArtworks.length > 0 ? (
-              <Masonry
-                breakpointCols={{ default: 3, 1024: 2, 768: 2, 640: 1 }}
-                className="flex w-auto gap-4"
-                columnClassName="flex flex-col gap-4"
-              >
-                {artistArtworks.map((item) => (
-                  <ArtworkCard 
-                    key={item.id} 
-                    artwork={item} 
-                    onClick={setSelectedArtwork} 
-                  />
+              <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+                {artistArtworks.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="break-inside-avoid w-full"
+                  >
+                    <ArtworkCard artwork={item} onClick={setSelectedArtwork} />
+                  </div>
                 ))}
-              </Masonry>
+              </div>
             ) : (
               <div className="text-center py-20 bg-white/50 dark:bg-slate-900/30 border border-slate-200 dark:border-white/10 rounded-3xl">
                 <span className="material-symbols-outlined text-6xl text-slate-400 dark:text-slate-500 mb-4">
