@@ -9,6 +9,8 @@ import ArtworkCard from '@/components/ArtworkCard';
 import ArtworkDetailModal from '@/components/ArtworkDetailModal';
 import { useArtwork, type Artwork } from '@/context/ArtworkContext';
 
+import TagCarousel from '@/components/TagCarousel';
+
 const MASONRY_BREAKPOINTS = {
   default: 4,
   1536: 4,
@@ -81,7 +83,7 @@ function HomeContent() {
 
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-8">
-      <section className="mb-10">
+      <section className="mb-6">
         <h1 className="text-5xl font-bold text-slate-900 dark:text-white mb-2 font-['Space_Grotesk']">
           {t('home.title', 'Curated Galaxies')}
         </h1>
@@ -89,6 +91,8 @@ function HomeContent() {
           {t('home.subtitle', 'Selected artwork from the outer reaches of the imagination.')}
         </p>
       </section>
+
+      <TagCarousel />
 
       {query && !isLoading && (
         <div className="mb-8 space-y-6">
