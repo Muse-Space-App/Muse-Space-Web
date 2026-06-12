@@ -26,7 +26,7 @@ function HomeContent() {
   const query = (searchParams.get('q') || '').toLowerCase();
   const postId = searchParams.get('post');
 
-  const { artworks: allArtworks, isLoading: isContextLoading, hasMore, isFetchingMore, fetchMoreArtworks } = useArtwork();
+  const { artworks: allArtworks, isLoading: isContextLoading, hasMore, isFetchingMore, fetchError, resetFetchError, fetchMoreArtworks } = useArtwork();
 
   const [filteredArtworks, setFilteredArtworks] = useState<Artwork[]>(allArtworks);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,8 +61,8 @@ function HomeContent() {
   }, [query, allArtworks]);
 
   const lastArtworkRef = useCallback((node: HTMLDivElement | null) => {
-    // If we're loading, fetching more, or currently searching by query, disable infinite scroll
-    if (isLoading || isContextLoading || isFetchingMore || query || !hasMore) return;
+    // If we're loading, fetching more, currently searching by query, or hit an error, disable infinite scroll
+    if (isLoading || isContextLoading || isFetchingMore || query || !hasMore || fetchError) return;
     if (observer.current) observer.current.disconnect();
 
     observer.current = new IntersectionObserver(entries => {
@@ -72,7 +72,7 @@ function HomeContent() {
     });
 
     if (node) observer.current.observe(node);
-  }, [isLoading, isContextLoading, isFetchingMore, query, hasMore, fetchMoreArtworks]);
+  }, [isLoading, isContextLoading, isFetchingMore, query, hasMore, fetchError, fetchMoreArtworks]);
 
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-8">
@@ -138,6 +138,18 @@ function HomeContent() {
           {isFetchingMore && (
             <div className="py-10 flex justify-center">
               <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+
+          {fetchError && (
+            <div className="py-10 flex flex-col items-center justify-center gap-4">
+              <p className="text-slate-500 dark:text-slate-400">Failed to load more artworks.</p>
+              <button 
+                onClick={resetFetchError}
+                className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-full transition-colors flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-sm">refresh</span> Try Again
+              </button>
             </div>
           )}
         </div>

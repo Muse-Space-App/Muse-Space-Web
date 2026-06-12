@@ -35,6 +35,8 @@ interface ArtworkContextType {
   fetchMoreArtworks: () => Promise<void>;
   hasMore: boolean;
   isFetchingMore: boolean;
+  fetchError: boolean;
+  resetFetchError: () => void;
   toggleLike: (id: number) => Promise<void>;
   toggleSave: (id: number) => Promise<void>;
   toggleFollow: (artistId: number) => Promise<void>;
@@ -48,10 +50,12 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
   const [hasMore, setHasMore] = useState(true);
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
   const { isAuthenticated, showAuthModal } = useAuth();
 
   const fetchArtworks = async () => {
     setIsLoading(true);
+    setFetchError(false);
     try {
       // Fetch from Feed API (Home feed usually)
       const response = await api.get('/feed');
@@ -75,10 +79,11 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
   };
 
   const fetchMoreArtworks = async () => {
-    if (isFetchingMore || !hasMore || nextCursor === null) return;
+    if (isFetchingMore || !hasMore || nextCursor === null || fetchError) return;
     setIsFetchingMore(true);
+    setFetchError(false);
     try {
-      const response = await api.get(`/feed?cursor=${nextCursor}`);
+      const response = await api.get(`/feed?cursor=${nextCursor}`, { timeout: 5000 });
       if (response.data?.isSuccess && response.data?.data?.items) {
         setArtworks(prev => {
           // Avoid duplicates
@@ -93,9 +98,14 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error("Failed to fetch more artworks", error);
+      setFetchError(true);
     } finally {
       setIsFetchingMore(false);
     }
+  };
+
+  const resetFetchError = () => {
+    setFetchError(false);
   };
 
   useEffect(() => {
@@ -148,7 +158,7 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ArtworkContext.Provider value={{ artworks, isLoading, hasMore, isFetchingMore, fetchArtworks, fetchMoreArtworks, toggleLike, toggleSave, toggleFollow }}>
+    <ArtworkContext.Provider value={{ artworks, isLoading, hasMore, isFetchingMore, fetchError, resetFetchError, fetchArtworks, fetchMoreArtworks, toggleLike, toggleSave, toggleFollow }}>
       {children}
     </ArtworkContext.Provider>
   );
