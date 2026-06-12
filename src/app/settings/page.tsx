@@ -9,6 +9,8 @@ export default function Settings() {
   const { i18n } = useTranslation();
   const { isAuthenticated, user } = useAuth();
   const [profilePhoto, setProfilePhoto] = useState('https://lh3.googleusercontent.com/aida-public/AB6AXuDWmy5Q4ovxN33Th-UGPn98NuvbII0lCPqmH900zYzCXD2mP6WnfsQYg5CyX8rf4tFNtD3EAcK7_vZu3h2MU_Gzi_YsraaLm89EtjkvWOclLf5f7DaiQ6yFiTF5zMb4P_tGqBFSwGcuJdefW5lWWa40l0ig7vMzrnaymQADnuGMjTvqBGxuaz_Ds9JqY1j1zgLWtXElciJZpSH4VQ1En6cYqRdHG1FU-2qPyfeqf01eITZydAYUO7SFxaTcPpAabjipbkR5ZqVqdRs');
+  const [bio, setBio] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   // Commissions State
   const [isAcceptingCommissions, setIsAcceptingCommissions] = useState(false);
@@ -53,6 +55,10 @@ export default function Settings() {
           .then(res => {
             if (res.data?.isSuccess) {
               setIsAcceptingCommissions(res.data.data.isAcceptingCommissions || false);
+              setBio(res.data.data.bio || '');
+              if (res.data.data.avatarUrl) {
+                setProfilePhoto(res.data.data.avatarUrl);
+              }
             }
           })
           .catch(err => console.error("Failed to fetch profile", err));
@@ -74,9 +80,30 @@ export default function Settings() {
         alert(res.data?.message || 'Failed to update status');
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to update status');
+      const errorMessage = err.response?.data?.errors?.validation?.[0] || err.response?.data?.message || 'Failed to update status';
+      alert(errorMessage);
     } finally {
       setIsTogglingCommissions(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true);
+    try {
+      const { default: api } = await import('@/lib/api');
+      const res = await api.put('/users/profile', {
+        bio: bio,
+        avatarUrl: profilePhoto
+      });
+      if (res.data?.isSuccess) {
+        alert('Profile saved successfully!');
+      } else {
+        alert(res.data?.message || 'Failed to save profile');
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to save profile');
+    } finally {
+      setIsSavingProfile(false);
     }
   };
 
@@ -137,31 +164,45 @@ export default function Settings() {
             <section className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-sm animate-[fadeIn_0.3s_ease-out]">
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
               <span className="material-symbols-outlined text-indigo-500">account_circle</span>
-              Edit Profile Photo
+              Edit Profile
             </h2>
             
-            <div className="flex items-center gap-8">
-              <div className="w-32 h-32 rounded-full border-4 border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden shrink-0">
-                <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-              </div>
-              
-              <div className="flex-1 space-y-4">
-                <p className="text-slate-600 dark:text-slate-400">Upload a new photo to change your avatar.</p>
-                
-                <div className="flex gap-4">
-                  <label className="cursor-pointer px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">upload</span>
-                    Upload Image
-                    <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-                  </label>
-                  
-                  <button 
-                    onClick={() => setProfilePhoto('')}
-                    className="px-6 py-3 bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 text-slate-700 dark:text-white border border-transparent dark:border-white/10 rounded-xl font-bold transition-all"
-                  >
-                    Remove
-                  </button>
+            <div className="flex flex-col gap-8">
+              <div className="flex items-center gap-8">
+                <div className="w-32 h-32 rounded-full border-4 border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden shrink-0">
+                  <img src={profilePhoto} alt="Profile" className="w-full h-full object-cover" />
                 </div>
+                
+                <div className="flex-1 space-y-4">
+                  <p className="text-slate-600 dark:text-slate-400">Upload a new photo to change your avatar.</p>
+                  
+                  <div className="flex gap-4">
+                    <label className="cursor-pointer px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all flex items-center gap-2">
+                      <span className="material-symbols-outlined text-sm">upload</span>
+                      Upload Image
+                      <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                    </label>
+                    
+                    <button 
+                      onClick={() => setProfilePhoto('')}
+                      className="px-6 py-3 bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 text-slate-700 dark:text-white border border-transparent dark:border-white/10 rounded-xl font-bold transition-all"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Bio</label>
+                <textarea 
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell us about yourself..."
+                  rows={4}
+                  className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                ></textarea>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Brief description for your profile.</p>
               </div>
             </div>
           </section>
@@ -308,9 +349,10 @@ export default function Settings() {
         {/* Save Changes Button */}
         <div className="flex justify-end pt-6">
           <button 
-            onClick={() => alert('Settings saved successfully!')}
-            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all hover:scale-[1.02]">
-            Save Settings
+            onClick={handleSaveProfile}
+            disabled={isSavingProfile}
+            className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all hover:scale-[1.02] disabled:opacity-50">
+            {isSavingProfile ? 'Saving...' : 'Save Settings'}
           </button>
         </div>
 

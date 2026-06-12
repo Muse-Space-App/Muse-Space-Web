@@ -139,7 +139,10 @@ export default function ProfilePage() {
               {/* Primary CTA in Header */}
               <div className="flex gap-3 justify-center sm:justify-start">
                 <button 
-                  onClick={() => toggleFollow(profile.userId)}
+                  onClick={async () => {
+                    await toggleFollow(profile.userId);
+                    setProfile(prev => prev ? { ...prev, isFollowing: !prev.isFollowing, followerCount: (prev.followerCount || 0) + (prev.isFollowing ? -1 : 1) } : null);
+                  }}
                   className={`px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg text-sm ${
                     profile.isFollowing
                       ? 'bg-white/20 backdrop-blur-md text-white hover:bg-white/30 border border-white/30'
@@ -171,6 +174,7 @@ export default function ProfilePage() {
         <div className="lg:col-span-1 space-y-8">
           
           {/* Commission Status & ToS */}
+          {profile.isAcceptingCommissions && (
           <section className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/5 p-6 rounded-3xl shadow-sm">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 font-['Space_Grotesk'] flex items-center gap-2">
               <span className="material-symbols-outlined text-indigo-500">info</span>
@@ -222,6 +226,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </section>
+          )}
 
           {/* Reviews & Ratings */}
           <section className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/5 p-6 rounded-3xl shadow-sm">
@@ -257,6 +262,7 @@ export default function ProfilePage() {
         <div className="lg:col-span-2 space-y-8">
           
           {/* Commission Catalog (Price List) */}
+          {profile.isAcceptingCommissions && (
           <section className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/5 p-6 md:p-8 rounded-3xl shadow-sm">
             <div className="flex justify-between items-end mb-6">
               <div>
@@ -299,6 +305,7 @@ export default function ProfilePage() {
               Commission Me
             </Link>
           </section>
+          )}
 
           {/* Artworks Grid (Portfolio) */}
           <section className="bg-transparent">
