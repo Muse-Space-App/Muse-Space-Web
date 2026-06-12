@@ -410,7 +410,7 @@ export default function Dashboard() {
               
               {/* Ticket Header Image */}
               <div className="h-32 bg-indigo-600 relative">
-                <div className="absolute inset-0 opacity-30 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://res.cloudinary.com/dzjoxcvv7/image/upload/v1/muse-space/w7o3q62z017y6d7y0k4w')" }}></div>
+                <div className="absolute inset-0 opacity-30 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://res.cloudinary.com/dzpv8dz7e/image/upload/v1780888547/rrxgc4xrzgk3rtnpcytz.jpg')" }}></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-indigo-900 to-transparent pointer-events-none"></div>
 
                 <div className="absolute bottom-4 left-6 right-6 pointer-events-none">
@@ -470,5 +470,6 @@ export default function Dashboard() {
     </div>
   );
 }
+
 
 

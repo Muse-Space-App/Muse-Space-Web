@@ -82,7 +82,7 @@ export default function ProfilePage() {
         {/* Banner */}
         <div className="h-64 md:h-80 w-full relative">
           <img 
-            src="https://res.cloudinary.com/dzjoxcvv7/image/upload/v1/muse-space/w7o3q62z017y6d7y0k4w-4.0.3&auto=format&fit=crop&w=2070&q=80" 
+            src="https://res.cloudinary.com/dzpv8dz7e/image/upload/v1780888547/rrxgc4xrzgk3rtnpcytz.jpg-4.0.3&auto=format&fit=crop&w=2070&q=80" 
             alt="Profile Banner" 
             className="w-full h-full object-cover"
           />
