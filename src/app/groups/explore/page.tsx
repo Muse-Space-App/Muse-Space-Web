@@ -99,7 +99,7 @@ export default function GroupsExplore() {
               ) : (
                 <button
                   onClick={() => handleJoin(group.id)}
-                  className="w-full py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]"
+                  className="w-full py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 bg-indigo-600  text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]"
                 >
                   <span className="material-symbols-outlined text-[18px]">group_add</span> Join Group
                 </button>

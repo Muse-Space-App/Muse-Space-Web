@@ -283,7 +283,7 @@ export default function AdminPanel() {
             </div>
 
             <div className="pt-4">
-              <button disabled={isCreatingEvent} type="submit" className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <button disabled={isCreatingEvent} type="submit" className="w-full py-4 bg-indigo-600  text-white rounded-xl font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 {isCreatingEvent ? 'Creating Event...' : 'Publish Event'}
               </button>
             </div>

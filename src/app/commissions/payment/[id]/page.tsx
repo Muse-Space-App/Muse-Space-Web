@@ -196,7 +196,7 @@ export default function PaymentPage() {
           <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">Nomor Virtual Account</p>
           <div className="flex items-center justify-between bg-white dark:bg-[#060913] border border-slate-200 dark:border-white/10 rounded-xl p-4 shadow-sm">
             <span className="font-mono text-xl md:text-2xl font-bold tracking-wider text-slate-900 dark:text-white">88301 0812 3456 789</span>
-            <button className="p-2 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-colors group" title="Copy to clipboard">
+            <button className="p-2 text-indigo-500 hover:bg-indigo-50 dark:/10 rounded-lg transition-colors group" title="Copy to clipboard">
               <span className="material-symbols-outlined group-hover:scale-110 transition-transform">content_copy</span>
             </button>
           </div>
@@ -219,7 +219,7 @@ export default function PaymentPage() {
       <div className="mt-auto space-y-3">
         <button 
           onClick={handleConfirmPayment} 
-          className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold tracking-wide shadow-lg shadow-indigo-500/25 transition-all active:scale-[0.98]"
+          className="w-full py-4 bg-indigo-600  text-white rounded-xl font-bold tracking-wide shadow-lg shadow-indigo-500/25 transition-all active:scale-[0.98]"
         >
           Cek Status Pembayaran
         </button>

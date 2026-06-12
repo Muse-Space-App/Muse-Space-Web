@@ -231,7 +231,7 @@ export default function GroupDetails() {
           {!group.isMember && group.role !== 'admin' && group.role !== 'creator' ? (
             <button 
               onClick={handleJoinGroup}
-              className="px-6 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-[0_0_15px_rgba(79,70,229,0.5)] transition-colors"
+              className="px-6 py-2 rounded-xl bg-indigo-600  text-white font-bold shadow-[0_0_15px_rgba(79,70,229,0.5)] transition-colors"
             >
               Join Group
             </button>
@@ -321,7 +321,7 @@ export default function GroupDetails() {
             </div>
             
             {/* Create Post Input */}
-            {group.isMember || group.role === 'admin' || group.role === 'creator' ? (
+            {group.isMember || group.role === 'admin' || group.role === 'creator' || group.role === 'member' ? (
               <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-2xl p-4 mb-8 shadow-sm flex gap-4">
                 <div className="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 shrink-0 overflow-hidden">
                    <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDWmy5Q4ovxN33Th-UGPn98NuvbII0lCPqmH900zYzCXD2mP6WnfsQYg5CyX8rf4tFNtD3EAcK7_vZu3h2MU_Gzi_YsraaLm89EtjkvWOclLf5f7DaiQ6yFiTF5zMb4P_tGqBFSwGcuJdefW5lWWa40l0ig7vMzrnaymQADnuGMjTvqBGxuaz_Ds9JqY1j1zgLWtXElciJZpSH4VQ1En6cYqRdHG1FU-2qPyfeqf01eITZydAYUO7SFxaTcPpAabjipbkR5ZqVqdRs" alt="User" className="w-full h-full object-cover" />
@@ -363,7 +363,7 @@ export default function GroupDetails() {
                   <button 
                     onClick={handlePostSubmit}
                     disabled={!postText.trim() && !attachedImage}
-                    className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-sm shadow-[0_0_15px_rgba(79,70,229,0.3)] disabled:opacity-50 transition-all"
+                    className="px-5 py-2 bg-indigo-600  text-white rounded-lg font-bold text-sm shadow-[0_0_15px_rgba(79,70,229,0.3)] disabled:opacity-50 transition-all"
                   >
                     Post
                   </button>
@@ -375,7 +375,7 @@ export default function GroupDetails() {
                 <p className="text-slate-600 dark:text-slate-400 font-medium">Join this group to participate in discussions and post your own updates.</p>
                 <button 
                   onClick={handleJoinGroup}
-                  className="mt-4 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-[0_0_15px_rgba(79,70,229,0.5)] transition-colors inline-flex items-center gap-2"
+                  className="mt-4 px-6 py-2.5 rounded-xl bg-indigo-600  text-white font-bold shadow-[0_0_15px_rgba(79,70,229,0.5)] transition-colors inline-flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined text-[18px]">group_add</span> Join Group
                 </button>
@@ -607,7 +607,7 @@ export default function GroupDetails() {
                 Done
               </button>
             ) : settingsView !== 'manageMembers' ? (
-              <button onClick={handleSaveSettings} className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-colors mt-2">
+              <button onClick={handleSaveSettings} className="w-full py-3 bg-indigo-600  text-white rounded-xl font-bold shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-colors mt-2">
                 Save Changes
               </button>
             ) : null}
@@ -704,7 +704,7 @@ export default function GroupDetails() {
             <div className="mt-4 pt-4 border-t border-slate-100 dark:border-white/10 shrink-0">
               <div className="flex gap-3">
                 <input type="text" placeholder="Reply to thread..." className="flex-1 bg-slate-100 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500" />
-                <button className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all">Reply</button>
+                <button className="px-4 py-2.5 bg-indigo-600  text-white rounded-xl font-bold shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all">Reply</button>
               </div>
             </div>
           </div>

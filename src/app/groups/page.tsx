@@ -91,7 +91,7 @@ export default function GroupsPage() {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:scale-[1.02] transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+          className="px-6 py-3 bg-indigo-600  text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:scale-[1.02] transition-all flex items-center justify-center gap-2 whitespace-nowrap">
           <span className="material-symbols-outlined">add_circle</span> {t('groups.btn_create_group', 'Create Group')}
         </button>
       </div>
@@ -124,7 +124,7 @@ export default function GroupsPage() {
                 <div className="mt-auto pt-2">
                   <Link
                     href={`/events/${event.id}`}
-                    className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-colors text-center block"
+                    className="w-full py-2 bg-indigo-600  text-white rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-colors text-center block"
                   >
                     {t('groups.btn_rsvp', 'RSVP Now')}
                   </Link>
@@ -172,7 +172,7 @@ export default function GroupsPage() {
 
               <button
                 onClick={() => handleJoin(group.id)}
-                className="w-full py-2.5 mt-auto rounded-xl font-bold transition-all flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]"
+                className="w-full py-2.5 mt-auto rounded-xl font-bold transition-all flex items-center justify-center gap-2 bg-indigo-600  text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]"
               >
                 <span className="material-symbols-outlined text-[18px]">group_add</span> {t('groups.btn_join_group', 'Join Group')}
               </button>
@@ -229,7 +229,7 @@ export default function GroupsPage() {
                 <button
                   type="submit"
                   disabled={!newGroupName.trim() || !newGroupDesc.trim()}
-                  className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                  className="flex-1 py-3 bg-indigo-600  text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] disabled:opacity-50 disabled:cursor-not-allowed transition-all">
                   {t('groups.btn_create', 'Create')}
                 </button>
               </div>

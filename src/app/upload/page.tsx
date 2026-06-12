@@ -142,7 +142,7 @@ export default function UploadPage() {
 
         <div>
           <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Artwork File</label>
-          <label className="block border-2 border-dashed border-slate-300 dark:border-indigo-500/30 rounded-xl overflow-hidden text-center hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-all cursor-pointer relative group">
+          <label className="block border-2 border-dashed border-slate-300 dark:border-indigo-500/30 rounded-xl overflow-hidden text-center hover:border-indigo-500 hover:bg-indigo-50 dark:/10 transition-all cursor-pointer relative group">
             <input 
               type="file" 
               accept="image/*" 
@@ -173,7 +173,7 @@ export default function UploadPage() {
           <button 
             type="submit" 
             disabled={isSubmitting || !file || !title}
-            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg font-bold shadow-[0_0_15px_rgba(79,70,229,0.3)] disabled:shadow-none transition-all hover:scale-[1.02] disabled:hover:scale-100 flex items-center gap-2"
+            className="bg-indigo-600  disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-3 rounded-lg font-bold shadow-[0_0_15px_rgba(79,70,229,0.3)] disabled:shadow-none transition-all hover:scale-[1.02] disabled:hover:scale-100 flex items-center gap-2"
           >
             {isSubmitting ? <span className="material-symbols-outlined animate-spin">refresh</span> : null}
             {isSubmitting ? 'Uploading...' : 'Submit Artwork'}

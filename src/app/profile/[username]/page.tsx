@@ -171,7 +171,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className="flex gap-2 w-full mt-2 lg:mt-0">
-                <Link href={`/commissions/request/${encodeURIComponent(profile.username)}`} className="w-full inline-flex justify-center items-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg transition-colors">
+                <Link href={`/commissions/request/${encodeURIComponent(profile.username)}`} className="w-full inline-flex justify-center items-center gap-2 py-3 bg-indigo-600  text-white rounded-xl font-bold shadow-lg transition-colors">
                   <span className="material-symbols-outlined text-lg">draw</span> Request Commission
                 </Link>
               </div>
@@ -191,7 +191,7 @@ export default function ProfilePage() {
                 showAuthModal();
               }
             }}
-            className="mt-6 md:hidden w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all flex justify-center items-center gap-2"
+            className="mt-6 md:hidden w-full py-4 bg-indigo-600  text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all flex justify-center items-center gap-2"
           >
             <span className="material-symbols-outlined text-base">shopping_cart_checkout</span>
             Request Commission

@@ -166,7 +166,7 @@ export default function PostPage() {
                 setImageLoaded(false);
                 setImageRetryKey(prev => prev + 1);
               }}
-              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)]"
+              className="px-6 py-2.5 bg-indigo-600  text-white rounded-xl font-bold flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)]"
             >
               <span className="material-symbols-outlined text-[20px]">refresh</span> Retry Loading
             </button>
@@ -264,7 +264,7 @@ export default function PostPage() {
                     className={`px-8 py-2.5 rounded-xl font-bold transition-all shadow-sm ${
                       artwork.isFollowingCreator 
                         ? 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300' 
-                        : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'
+                        : 'bg-indigo-600  text-white shadow-indigo-500/20'
                     }`}
                   >
                     {artwork.isFollowingCreator ? 'Following' : 'Follow Artist'}
@@ -282,7 +282,7 @@ export default function PostPage() {
                 <Link 
                   key={tag.id} 
                   href={`/?q=${encodeURIComponent(tag.name)}`}
-                  className="px-5 py-2 bg-slate-50 dark:bg-slate-800/50 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-colors border border-slate-200 dark:border-white/5"
+                  className="px-5 py-2 bg-slate-50 dark:bg-slate-800/50 dark:text-slate-300 rounded-xl text-sm font-semibold hover:bg-indigo-50 dark:/30 hover:text-indigo-600 transition-colors border border-slate-200 dark:border-white/5"
                 >
                   #{tag.name}
                 </Link>

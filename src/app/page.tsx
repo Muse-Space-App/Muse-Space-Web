@@ -167,7 +167,7 @@ function HomeContent() {
               <p className="text-slate-500 dark:text-slate-400">Failed to load more artworks.</p>
               <button 
                 onClick={resetFetchError}
-                className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-full transition-colors flex items-center gap-2"
+                className="px-6 py-2 bg-indigo-500  text-white font-medium rounded-full transition-colors flex items-center gap-2"
               >
                 <span className="material-symbols-outlined text-sm">refresh</span> Try Again
               </button>

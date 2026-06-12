@@ -147,7 +147,7 @@ export default function EventDetails() {
               className={`w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
                 isRsvped 
                   ? 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-none' 
-                  : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:scale-[1.02]'
+                  : 'bg-indigo-600  text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:scale-[1.02]'
               }`}>
               <span className="material-symbols-outlined">{isRsvped ? 'how_to_reg' : 'confirmation_number'}</span> 
               {isRsvped ? "Kamu Sudah Terdaftar" : 'RSVP Now'}
@@ -219,7 +219,7 @@ export default function EventDetails() {
               <button 
                 type="submit"
                 disabled={!formData.fullName || !formData.email || !formData.agree || isSubmitting}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2 mt-4"
+                className="w-full py-3 bg-indigo-600  text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2 mt-4"
               >
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -248,7 +248,7 @@ export default function EventDetails() {
             <div className="flex flex-col gap-3">
               <button 
                 onClick={() => router.push('/dashboard?ticket=true')}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] flex justify-center items-center gap-2">
+                className="w-full py-3 bg-indigo-600  text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] flex justify-center items-center gap-2">
                 <span className="material-symbols-outlined">local_activity</span> Lihat Tiket Saya
               </button>
               <button 

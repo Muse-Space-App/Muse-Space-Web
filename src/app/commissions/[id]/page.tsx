@@ -36,7 +36,7 @@ export default function Workspace() {
           const current = combined.find((o: any) => o.id.toString() === orderId);
           if (current) {
             setActiveOrder(current);
-          } else {
+          } else if (orderId !== 'request') {
             // Fetch specific if not in active list
             const specificRes = await api.get(`/commissions/${orderId}`);
             if (specificRes.data?.isSuccess) {
@@ -235,7 +235,7 @@ export default function Workspace() {
             <button 
               type="submit" 
               disabled={!newMessage.trim()}
-              className="p-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all shrink-0"
+              className="p-3 bg-indigo-600  disabled:opacity-50 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all shrink-0"
             >
               <span className="material-symbols-outlined">send</span>
             </button>

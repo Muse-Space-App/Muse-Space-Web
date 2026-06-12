@@ -61,7 +61,7 @@ export default function CommissionsPage() {
 
               <Link 
                 href={`/profile/${encodeURIComponent(artist.username)}`}
-                className="w-full py-2.5 bg-indigo-600 dark:bg-white/5 hover:bg-indigo-700 dark:hover:bg-indigo-500/20 border border-transparent dark:border-white/10 hover:border-transparent dark:hover:border-indigo-500/50 text-white rounded-lg transition-all font-medium block shadow-[0_0_15px_rgba(79,70,229,0.2)] dark:shadow-none"
+                className="w-full py-2.5 bg-indigo-600 dark:bg-white/5  dark:/20 border border-transparent dark:border-white/10 hover:border-transparent dark:hover:border-indigo-500/50 text-white rounded-lg transition-all font-medium block shadow-[0_0_15px_rgba(79,70,229,0.2)] dark:shadow-none"
               >
                 View Profile
               </Link>
