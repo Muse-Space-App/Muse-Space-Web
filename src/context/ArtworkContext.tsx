@@ -42,7 +42,7 @@ const ArtworkContext = createContext<ArtworkContextType | undefined>(undefined);
 export function ArtworkProvider({ children }: { children: ReactNode }) {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, showAuthModal } = useAuth();
 
   const fetchArtworks = async () => {
     setIsLoading(true);
@@ -69,6 +69,10 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
   }, [isAuthenticated]); // Refetch if auth state changes (to get correct isLiked flags)
 
   const toggleLike = async (id: number) => {
+    if (!isAuthenticated) {
+      showAuthModal();
+      return;
+    }
     // Optimistic UI Update
     setArtworks(prev => prev.map(art => art.id === id ? { ...art, isLiked: !art.isLiked, likeCount: art.isLiked ? art.likeCount - 1 : art.likeCount + 1 } : art));
     try {
@@ -80,6 +84,10 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleSave = async (id: number) => {
+    if (!isAuthenticated) {
+      showAuthModal();
+      return;
+    }
     // Optimistic UI Update
     setArtworks(prev => prev.map(art => art.id === id ? { ...art, isBookmarked: !art.isBookmarked } : art));
     try {
@@ -91,6 +99,10 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleFollow = async (artistId: number) => {
+    if (!isAuthenticated) {
+      showAuthModal();
+      return;
+    }
     // Optimistic UI Update across all artworks by this artist
     setArtworks(prev => prev.map(art => art.creatorId === artistId ? { ...art, isFollowingCreator: !art.isFollowingCreator } : art));
     try {

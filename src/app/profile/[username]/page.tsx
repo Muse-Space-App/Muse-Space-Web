@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Masonry from 'react-masonry-css';
 import MasonryGrid from '@/components/MasonryGrid';
 import { useArtwork, type Artwork } from '@/context/ArtworkContext';
+import { useAuth } from '@/context/AuthContext';
 import ArtworkCard from '@/components/ArtworkCard';
 import ArtworkDetailModal from '@/components/ArtworkDetailModal';
 import api from '@/lib/api';
@@ -25,6 +26,7 @@ export default function ProfilePage() {
   const decodedUsername = username ? decodeURIComponent(username) : '';
   
   const { toggleFollow } = useArtwork();
+  const { isAuthenticated, showAuthModal } = useAuth();
 
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   
@@ -140,6 +142,10 @@ export default function ProfilePage() {
               <div className="flex gap-3 justify-center sm:justify-start">
                 <button 
                   onClick={async () => {
+                    if (!isAuthenticated) {
+                      showAuthModal();
+                      return;
+                    }
                     await toggleFollow(profile.userId);
                     setProfile(prev => prev ? { ...prev, isFollowing: !prev.isFollowing, followerCount: (prev.followerCount || 0) + (prev.isFollowing ? -1 : 1) } : null);
                   }}
@@ -273,10 +279,17 @@ export default function ProfilePage() {
                 <p className="text-slate-600 dark:text-slate-400">Choose a package that fits your needs.</p>
               </div>
               
-              <Link href={`/commissions/request/${encodeURIComponent(profile.username)}`}
-                className="hidden md:flex px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 items-center gap-2"
+              <Link 
+                href={`/commissions/request/${encodeURIComponent(profile.username)}`}
+                onClick={(e) => {
+                  if (!isAuthenticated) {
+                    e.preventDefault();
+                    showAuthModal();
+                  }
+                }}
+                className="hidden md:flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-fuchsia-500 hover:from-indigo-400 hover:to-fuchsia-400 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-lg shadow-indigo-500/25"
               >
-                <span className="material-symbols-outlined text-base">shopping_cart_checkout</span>
+                <span className="material-symbols-outlined">brush</span>
                 Commission Me
               </Link>
             </div>
@@ -299,6 +312,12 @@ export default function ProfilePage() {
             
             {/* Mobile CTA */}
             <Link href={`/commissions/request/${encodeURIComponent(profile.username)}`}
+              onClick={(e) => {
+                if (!isAuthenticated) {
+                  e.preventDefault();
+                  showAuthModal();
+                }
+              }}
               className="mt-6 md:hidden w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all flex justify-center items-center gap-2"
             >
               <span className="material-symbols-outlined text-base">shopping_cart_checkout</span>

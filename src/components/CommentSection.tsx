@@ -18,7 +18,7 @@ export interface CommentResponse {
 }
 
 export default function CommentSection({ artworkId }: { artworkId: number }) {
-  const { user } = useAuth();
+  const { user, showAuthModal } = useAuth();
   const [comments, setComments] = useState<CommentResponse[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -72,34 +72,49 @@ export default function CommentSection({ artworkId }: { artworkId: number }) {
       <h3 className="text-xl font-bold dark:text-white mb-6 font-['Space_Grotesk']">Comments ({comments.length})</h3>
       
       {/* Comment Form */}
-      {user ? (
-        <form onSubmit={handleSubmit} className="mb-8 flex gap-3">
-          <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-bold shrink-0">
-            {user.username?.charAt(0).toUpperCase()}
-          </div>
-          <div className="flex-1 flex flex-col items-end gap-2">
-            <textarea
-              className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 rounded-xl py-3 px-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-none"
-              rows={2}
-              placeholder="Add a comment..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-            />
-            {error && <p className="text-red-400 text-xs w-full">{error}</p>}
-            <button
-              type="submit"
-              disabled={isSubmitting || !newComment.trim()}
-              className="px-6 py-2 bg-indigo-600 hover:brightness-110 disabled:opacity-50 text-white rounded-lg font-bold text-sm transition-all"
-            >
-              {isSubmitting ? "Posting..." : "Post"}
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="mb-8 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-white/10 text-center">
-          <p className="text-slate-600 dark:text-slate-400 text-sm">Please sign in to leave a comment.</p>
+      <form onSubmit={handleSubmit} className="mb-8 flex gap-3">
+        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 font-bold shrink-0 overflow-hidden">
+          {user ? (
+            user.username?.charAt(0).toUpperCase()
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+          )}
         </div>
-      )}
+        <div className="flex-1 flex flex-col items-end gap-2">
+          <textarea
+            className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-white/10 rounded-xl py-3 px-4 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-none"
+            rows={2}
+            placeholder="Add a comment..."
+            value={newComment}
+            onChange={(e) => {
+              if (!user) {
+                showAuthModal();
+                return;
+              }
+              setNewComment(e.target.value);
+            }}
+            onFocus={(e) => {
+              if (!user) {
+                showAuthModal();
+                e.target.blur();
+              }
+            }}
+          />
+          {error && <p className="text-red-400 text-xs w-full">{error}</p>}
+          <button
+            type={user ? "submit" : "button"}
+            disabled={user ? (isSubmitting || !newComment.trim()) : false}
+            onClick={() => {
+              if (!user) {
+                showAuthModal();
+              }
+            }}
+            className="px-6 py-2 bg-indigo-600 hover:brightness-110 disabled:opacity-50 text-white rounded-lg font-bold text-sm transition-all"
+          >
+            {isSubmitting ? "Posting..." : "Post"}
+          </button>
+        </div>
+      </form>
 
       {/* Comment List */}
       <div className="space-y-6 max-h-80 overflow-y-auto pr-2 custom-scrollbar">

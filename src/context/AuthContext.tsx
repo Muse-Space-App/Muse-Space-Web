@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import api from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import AuthModal from '@/components/AuthModal';
 
 export interface User {
   id: number;
@@ -21,6 +22,9 @@ interface AuthContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   checkAuth: () => Promise<void>;
+  isAuthModalOpen: boolean;
+  showAuthModal: () => void;
+  closeAuthModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,7 +32,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const router = useRouter();
+
+  const showAuthModal = () => setIsAuthModalOpen(true);
+  const closeAuthModal = () => setIsAuthModalOpen(false);
 
   const checkAuth = async () => {
     setIsLoading(true);
@@ -36,16 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (token) {
       try {
-        // Assume backend has a /auth/me or similar endpoint to verify token
-        // In the absence of one, if we have a token, we might decode it or 
-        // trust it until an API call returns 401. 
-        // For now, if we have token and user data in local storage, we parse it.
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           setUser(JSON.parse(storedUser));
         } else {
-          // If we don't have user details but have token, clear it to force fresh login 
-          // because we can't fetch profile yet (unless we build an endpoint for it).
           logout();
         }
       } catch (error) {
@@ -72,9 +74,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push('/login');
   };
 
+// We lazily import AuthModal to prevent circular dependency issues if any
+  // Or we can just import it at the top. Let's assume it's imported at the top.
+  // Wait, I will just render it here. Wait, actually I will import it at the top of the file.
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, logout, checkAuth }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated: !!user, 
+      isLoading, 
+      login, 
+      logout, 
+      checkAuth,
+      isAuthModalOpen,
+      showAuthModal,
+      closeAuthModal
+    }}>
       {children}
+      <AuthModal />
     </AuthContext.Provider>
   );
 }
