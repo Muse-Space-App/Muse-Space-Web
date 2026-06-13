@@ -539,7 +539,7 @@ const CommissionDetailWithChat = memo<CommissionDetailWithChatProps>(
 
       try {
         setIsSending(true);
-        coContent = await api.post(`/commissions/${c.id}/messages`, {
+        const res = await api.post(`/commissions/${c.id}/messages`, {
           message: messageText,
         });
 
