@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
@@ -11,6 +12,7 @@ export interface GroupResponse {
   description: string;
   avatarUrl: string;
   memberCount: number;
+  isMember?: boolean;
 }
 
 export interface EventResponse {
@@ -22,6 +24,7 @@ export interface EventResponse {
 }
 
 export default function GroupsPage() {
+  const router = useRouter();
   const { t } = useTranslation();
   const [groups, setGroups] = useState<GroupResponse[]>([]);
   const [events, setEvents] = useState<EventResponse[]>([]);
@@ -52,10 +55,9 @@ export default function GroupsPage() {
   const handleJoin = async (id: number) => {
     try {
       await api.post(`/groups/${id}/join`);
-      alert("Join request sent or joined successfully!");
+      router.push(`/groups/${id}`);
     } catch (e) {
-      console.error(e);
-      alert("Failed to join group");
+      console.error("Failed to join group", e);
     }
   };
 
@@ -170,12 +172,20 @@ export default function GroupsPage() {
               </div>
               <p className="text-slate-700 dark:text-slate-300 text-sm flex-1 line-clamp-3">{group.description}</p>
 
-              <button
-                onClick={() => handleJoin(group.id)}
-                className="w-full py-2.5 mt-auto rounded-xl font-bold transition-all flex items-center justify-center gap-2 bg-indigo-600  text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]"
-              >
-                <span className="material-symbols-outlined text-[18px]">group_add</span> {t('groups.btn_join_group', 'Join Group')}
-              </button>
+              {group.isMember ? (
+                <Link href={`/groups/${group.id}`}
+                  className="w-full py-2.5 mt-auto rounded-xl font-bold transition-all flex items-center justify-center gap-2 bg-emerald-50 dark:bg-emerald-600/20 hover:bg-emerald-100 dark:hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-500 border border-emerald-200 dark:border-emerald-500/50"
+                >
+                  <span className="material-symbols-outlined text-[18px]">check_circle</span> Open Group
+                </Link>
+              ) : (
+                <button
+                  onClick={() => handleJoin(group.id)}
+                  className="w-full py-2.5 mt-auto rounded-xl font-bold transition-all flex items-center justify-center gap-2 bg-indigo-600  text-white shadow-[0_0_20px_rgba(79,70,229,0.3)]"
+                >
+                  <span className="material-symbols-outlined text-[18px]">group_add</span> {t('groups.btn_join_group', 'Join Group')}
+                </button>
+              )}
             </div>
           )) : (
             <div className="col-span-full text-center p-8 text-slate-500">No groups found. Create one!</div>

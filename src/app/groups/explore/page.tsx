@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 
@@ -17,6 +18,7 @@ export default function GroupsExplore() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { isAuthenticated, showAuthModal } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -47,7 +49,9 @@ export default function GroupsExplore() {
     }));
     try {
       await api.post(`/groups/${id}/join`);
+      router.push(`/groups/${id}`);
     } catch (e) {
+      console.error("Failed to join group", e);
       setGroups(groups.map(g => {
         if (g.id === id) {
           return { ...g, isMember: false, memberCount: g.memberCount - 1 };
@@ -94,7 +98,7 @@ export default function GroupsExplore() {
                 <Link href={`/groups/${group.id}`}
                   className="w-full py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 bg-emerald-50 dark:bg-emerald-600/20 hover:bg-emerald-100 dark:hover:bg-emerald-600/30 text-emerald-600 dark:text-emerald-500 border border-emerald-200 dark:border-emerald-500/50"
                 >
-                  <span className="material-symbols-outlined text-[18px]">check_circle</span> View Workspace
+                  <span className="material-symbols-outlined text-[18px]">check_circle</span> Open Group
                 </Link>
               ) : (
                 <button
