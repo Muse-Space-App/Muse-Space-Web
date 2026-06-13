@@ -76,6 +76,9 @@ export default function Workspace() {
   };
 
   const getStatusText = (status: number) => {
+    if (status === 4 && activeOrder?.artworkUrl) {
+      return "Artwork Delivered (Review Pending)";
+    }
     switch (status) {
       case 0: return 'Pending';
       case 1: return 'Accepted';
@@ -177,9 +180,27 @@ export default function Workspace() {
             
             <div className="mt-4 px-2">
               <div className="flex justify-between text-xs font-bold text-slate-400">
-                <span className={[0, 1, 4, 5].includes(activeOrder.status) ? 'text-indigo-500' : ''}>Start</span>
-                <span className={[4, 5].includes(activeOrder.status) ? 'text-indigo-500' : ''}>Progress</span>
-                <span className={activeOrder.status === 5 ? 'text-indigo-500' : ''}>Done</span>
+                <span
+                  className={
+                    [0, 1, 4, 5].includes(activeOrder.status)
+                      ? "text-indigo-500"
+                      : ""
+                  }
+                >
+                  Start
+                </span>
+                <span
+                  className={
+                    [4, 5].includes(activeOrder.status) ? "text-indigo-500" : ""
+                  }
+                >
+                  {activeOrder.status === 4 && activeOrder.artworkUrl ? "Delivered" : "Progress"}
+                </span>
+                <span
+                  className={activeOrder.status === 5 ? "text-indigo-500" : ""}
+                >
+                  Done
+                </span>
               </div>
               <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 mt-2 rounded-full overflow-hidden">
                 <div className={`h-full bg-indigo-500 transition-all duration-1000 ${
@@ -227,46 +248,130 @@ export default function Workspace() {
           <div className="border-t border-slate-200 dark:border-white/10 pt-8">
             <h3 className="font-bold text-slate-900 dark:text-white mb-4">Quick Actions</h3>
             <div className="space-y-3">
+              {/* Status 0: Pending Request */}
               {activeOrder.status === 0 && (
                 <>
                   {isArtist && (
-                    <button onClick={() => handleUpdateStatus(1)} className="w-full px-4 py-3 bg-indigo-600 dark:bg-white dark:text-slate-900 dark:shadow-none text-white font-bold rounded-xl hover:bg-indigo-700 dark:hover:bg-slate-200 transition-colors shadow-lg shadow-indigo-500/20">
+                    <button 
+                      onClick={() => handleUpdateStatus(1)} 
+                      className="w-full px-4 py-3 bg-indigo-600 dark:bg-white dark:text-slate-900 dark:shadow-none text-white font-bold rounded-xl hover:bg-indigo-700 dark:hover:bg-slate-200 transition-colors shadow-lg shadow-indigo-500/20"
+                    >
                       Accept Order
                     </button>
                   )}
-                  <button onClick={() => handleUpdateStatus(3)} className="w-full px-4 py-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold rounded-xl hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors">
+                  <button 
+                    onClick={() => handleUpdateStatus(3)} 
+                    className="w-full px-4 py-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 font-bold rounded-xl hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                  >
                     Reject Request
                   </button>
                 </>
               )}
+
+              {/* Status 1: Accepted / Unpaid */}
               {activeOrder.status === 1 && (
                 <>
-                  {!isArtist && (
-                    <button 
-                      onClick={() => router.push(`/commissions/payment/${activeOrder.id}`)}
-                      className="w-full px-4 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                  {!isArtist ? (
+                    <Link
+                      href={`/commissions/payment/${activeOrder.id}`}
+                      className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
                     >
-                      <span className="material-symbols-outlined">shopping_cart</span>
-                      Pay Now
-                    </button>
-                  )}
-                  {isArtist && (
-                    <button onClick={() => handleUpdateStatus(4)} className="w-full px-4 py-3 bg-indigo-600 dark:bg-white dark:text-slate-900 dark:shadow-none text-white font-bold rounded-xl hover:bg-indigo-700 dark:hover:bg-slate-200 transition-colors shadow-lg shadow-indigo-500/20">
-                      Start Working
+                      <span className="material-symbols-outlined">payments</span>
+                      Pay Now (${activeOrder.price})
+                    </Link>
+                  ) : (
+                    <button 
+                      disabled 
+                      className="w-full py-4 bg-slate-800/50 text-slate-400 border border-white/5 rounded-xl font-bold flex items-center justify-center gap-2 cursor-not-allowed"
+                    >
+                      <span className="material-symbols-outlined">hourglass_empty</span>
+                      Awaiting Customer Payment
                     </button>
                   )}
                 </>
               )}
-              {activeOrder.status === 4 && isArtist && (
-                <button onClick={() => handleUpdateStatus(5)} className="w-full px-4 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
-                  <span className="material-symbols-outlined">check_circle</span>
-                  Mark as Completed
-                </button>
+
+              {/* Status 2: Paid / Pending Verification */}
+              {activeOrder.status === 2 && (
+                <>
+                  {isArtist ? (
+                    <button
+                      onClick={async () => {
+                        try {
+                          await api.post(`/payments/${activeOrder.id}/verify`);
+                          setActiveOrder({ ...activeOrder, status: 4 });
+                        } catch (err) {
+                          console.error("Failed to verify payment", err);
+                        }
+                      }}
+                      className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
+                    >
+                      <span className="material-symbols-outlined">verified</span>
+                      Verify Payment Received
+                    </button>
+                  ) : (
+                    <Link
+                      href={`/commissions/payment/${activeOrder.id}`}
+                      className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
+                    >
+                      <span className="material-symbols-outlined">payments</span>
+                      Payment Pending Verification
+                    </Link>
+                  )}
+                </>
               )}
+
+              {/* Status 4: In Progress / Delivering */}
+              {activeOrder.status === 4 && (
+                <>
+                  {isArtist ? (
+                    <Link
+                      href={`/commissions/delivery/${activeOrder.id}`}
+                      className="w-full py-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
+                    >
+                      <span className="material-symbols-outlined">inventory_2</span>
+                      {activeOrder.artworkUrl ? "View Delivery" : "Deliver Artwork"}
+                    </Link>
+                  ) : (
+                    <>
+                      {activeOrder.artworkUrl ? (
+                        <Link
+                          href={`/commissions/delivery/${activeOrder.id}`}
+                          className="w-full py-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
+                        >
+                          <span className="material-symbols-outlined">visibility</span>
+                          Review & Accept Artwork
+                        </Link>
+                      ) : (
+                        <button 
+                          disabled
+                          className="w-full py-4 bg-slate-800/50 text-slate-400 border border-white/5 rounded-xl font-bold flex items-center justify-center gap-2 cursor-not-allowed"
+                        >
+                          <span className="material-symbols-outlined">hourglass_empty</span>
+                          Artwork In Progress
+                        </button>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* Status 5: Completed */}
               {activeOrder.status === 5 && (
-                <button className="w-full px-4 py-3 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white font-bold rounded-xl cursor-default">
-                  <span className="material-symbols-outlined inline mr-2 text-emerald-500">verified</span>
-                  Completed Successfully
+                <Link
+                  href={`/commissions/delivery/${activeOrder.id}`}
+                  className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
+                >
+                  <span className="material-symbols-outlined">download</span>
+                  {isArtist ? "View Final Delivery" : "Download Artwork"}
+                </Link>
+              )}
+
+              {/* Status 3, 6, etc. (Rejected / Cancelled) */}
+              {![0, 1, 2, 4, 5].includes(activeOrder.status) && (
+                <button className="w-full py-4 bg-slate-200 dark:bg-white/5 text-slate-400 dark:text-slate-500 rounded-xl font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                  <span className="material-symbols-outlined">lock</span>
+                  No Action Required
                 </button>
               )}
             </div>

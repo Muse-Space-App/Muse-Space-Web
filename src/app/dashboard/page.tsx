@@ -31,6 +31,8 @@ export default function Dashboard() {
   
   const [stats, setStats] = useState<any>(null);
   const [commissions, setCommissions] = useState<any[]>([]);
+  const [receivedCommissions, setReceivedCommissions] = useState<any[]>([]);
+  const [commissionTab, setCommissionTab] = useState<'requested' | 'received'>('requested');
   const [events, setEvents] = useState<any[]>([]);
   const [groups, setGroups] = useState<any[]>([]);
   const [userArtworks, setUserArtworks] = useState<any[]>([]);
@@ -95,8 +97,9 @@ export default function Dashboard() {
           return null;
         });
 
-        const [commsRes, eventsRes, groupsRes, userArtworksRes, likedRes, savedRes] = await Promise.all([
+        const [commsRes, receivedCommsRes, eventsRes, groupsRes, userArtworksRes, likedRes, savedRes] = await Promise.all([
           fetchSafe('/commissions/requested'),
+          fetchSafe('/commissions/received'),
           fetchSafe('/events/my-rsvps'),
           fetchSafe('/groups'),
           fetchSafe(`/Artwork/user/${user?.id || 0}`),
@@ -105,6 +108,7 @@ export default function Dashboard() {
         ]);
 
         if (commsRes?.data?.isSuccess) setCommissions(commsRes.data.data.items || []);
+        if (receivedCommsRes?.data?.isSuccess) setReceivedCommissions(receivedCommsRes.data.data.items || []);
         if (eventsRes?.data?.isSuccess) setEvents(eventsRes.data.data.items || eventsRes.data.data || []);
         if (groupsRes?.data?.isSuccess) setGroups(groupsRes.data.data.items || groupsRes.data.data || []);
         if (userArtworksRes?.data?.isSuccess) setUserArtworks(userArtworksRes.data.data.items || userArtworksRes.data.data || []);
@@ -239,12 +243,36 @@ export default function Dashboard() {
 
           {/* Commissions Section */}
           <section className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white font-['Space_Grotesk'] flex items-center gap-3">
                 <span className="material-symbols-outlined text-emerald-500">design_services</span>
-                My Commission Requests
+                Commissions
               </h2>
-              <Link href="/commissions" className="text-indigo-600 dark:text-indigo-400 text-sm font-bold hover:underline">Browse Artists</Link>
+              <div className="flex items-center gap-4">
+                <div className="flex bg-slate-100 dark:bg-slate-900/50 p-1 rounded-xl">
+                  <button 
+                    onClick={() => setCommissionTab('requested')}
+                    className={`px-4 py-1.5 rounded-lg font-bold text-xs transition-all ${
+                      commissionTab === 'requested' 
+                        ? 'bg-white dark:bg-slate-800 text-indigo-500 shadow-sm' 
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    My Requests
+                  </button>
+                  <button 
+                    onClick={() => setCommissionTab('received')}
+                    className={`px-4 py-1.5 rounded-lg font-bold text-xs transition-all ${
+                      commissionTab === 'received' 
+                        ? 'bg-white dark:bg-slate-800 text-indigo-500 shadow-sm' 
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    Received Orders
+                  </button>
+                </div>
+                <Link href="/commissions" className="text-indigo-600 dark:text-indigo-400 text-sm font-bold hover:underline shrink-0">Browse Artists</Link>
+              </div>
             </div>
             
             <div className="bg-white/50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden">
@@ -252,7 +280,7 @@ export default function Dashboard() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-100 dark:bg-slate-950/50 border-b border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 text-sm">
-                      <th className="p-4 font-medium">Artist</th>
+                      <th className="p-4 font-medium">{commissionTab === 'requested' ? 'Artist' : 'Client'}</th>
                       <th className="p-4 font-medium">Type</th>
                       <th className="p-4 font-medium">Date</th>
                       <th className="p-4 font-medium">Status</th>
@@ -260,29 +288,33 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {commissions.length > 0 ? commissions.map((comm) => (
-                      <tr key={comm.id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                        <td className="p-4 font-bold text-slate-900 dark:text-white">{comm.artistUsername}</td>
-                        <td className="p-4 text-slate-600 dark:text-slate-300">Custom Request</td>
-                        <td className="p-4 text-slate-500 dark:text-slate-400 text-sm">{new Date(comm.createdAtUtc).toLocaleDateString()}</td>
-                        <td className="p-4">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusClass(comm.status)}`}>
-                            <span className="material-symbols-outlined text-[14px]">
-                              {getStatusIcon(comm.status)}
+                    {(commissionTab === 'requested' ? commissions : receivedCommissions).length > 0 ? (
+                      (commissionTab === 'requested' ? commissions : receivedCommissions).map((comm) => (
+                        <tr key={comm.id} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                          <td className="p-4 font-bold text-slate-900 dark:text-white">
+                            {commissionTab === 'requested' ? comm.artistUsername : comm.requesterUsername}
+                          </td>
+                          <td className="p-4 text-slate-600 dark:text-slate-300">Custom Order</td>
+                          <td className="p-4 text-slate-500 dark:text-slate-400 text-sm">{new Date(comm.createdAtUtc).toLocaleDateString()}</td>
+                          <td className="p-4">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusClass(comm.status)}`}>
+                              <span className="material-symbols-outlined text-[14px]">
+                                {getStatusIcon(comm.status)}
+                              </span>
+                              {getStatusText(comm.status)}
                             </span>
-                            {getStatusText(comm.status)}
-                          </span>
-                        </td>
-                        <td className="p-4 text-right">
-                          <Link href={`/commissions/${comm.id}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium text-sm transition-colors">
-                            View Thread
-                          </Link>
-                        </td>
-                      </tr>
-                    )) : (
+                          </td>
+                          <td className="p-4 text-right">
+                            <Link href={`/commissions/${comm.id}`} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium text-sm transition-colors">
+                              View Thread
+                            </Link>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
                       <tr>
                         <td colSpan={5} className="p-8 text-center text-slate-500">
-                          No commission requests found.
+                          {commissionTab === 'requested' ? 'No commission requests found.' : 'No received orders found.'}
                         </td>
                       </tr>
                     )}
