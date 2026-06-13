@@ -34,6 +34,7 @@ export default function GroupsPage() {
   const [showModal, setShowModal] = useState(false);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDesc, setNewGroupDesc] = useState('');
+  const [newGroupAvatarUrl, setNewGroupAvatarUrl] = useState('');
   
   useEffect(() => {
     const fetchData = async () => {
@@ -70,6 +71,7 @@ export default function GroupsPage() {
       const response = await api.post('/groups', {
         name: newGroupName,
         description: newGroupDesc,
+        avatarUrl: newGroupAvatarUrl,
         isPrivate: false
       });
       if (response.data?.isSuccess) {
@@ -77,6 +79,7 @@ export default function GroupsPage() {
         setShowModal(false);
         setNewGroupName('');
         setNewGroupDesc('');
+        setNewGroupAvatarUrl('');
       }
     } catch (e) {
       console.error("Failed to create group", e);
@@ -235,6 +238,17 @@ export default function GroupsPage() {
                   rows={3}
                   className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-500 dark:placeholder:text-slate-600 resize-none"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Group Icon URL (Optional)</label>
+                <input
+                  type="url"
+                  value={newGroupAvatarUrl}
+                  onChange={(e) => setNewGroupAvatarUrl(e.target.value)}
+                  placeholder="https://example.com/icon.png"
+                  className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-500 dark:placeholder:text-slate-600"
                 />
               </div>
 

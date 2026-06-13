@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Notification {
   id: number;
@@ -17,6 +18,8 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetchNotifications();
@@ -65,18 +68,34 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
         <h1 className="text-3xl font-bold flex items-center gap-3 text-slate-900 dark:text-white font-['Space_Grotesk']">
           <span className="material-symbols-outlined text-indigo-500 text-3xl">notifications</span> Notifications
         </h1>
-        {notifications.some(n => !n.isRead) && (
-          <button 
-            onClick={markAllAsRead}
-            className="text-sm px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 transition-colors font-medium"
-          >
-            <span className="material-symbols-outlined text-[18px]">done_all</span> Mark all as read
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+            <button 
+              onClick={() => setShowUnreadOnly(false)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${!showUnreadOnly ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            >
+              All
+            </button>
+            <button 
+              onClick={() => setShowUnreadOnly(true)}
+              className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${showUnreadOnly ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
+            >
+              Unread
+            </button>
+          </div>
+          {notifications.some(n => !n.isRead) && (
+            <button 
+              onClick={markAllAsRead}
+              className="text-sm px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-300 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2 transition-colors font-medium"
+            >
+              <span className="material-symbols-outlined text-[18px]">done_all</span> Mark all as read
+            </button>
+          )}
+        </div>
       </div>
 
       {isLoading ? (
@@ -97,10 +116,14 @@ export default function NotificationsPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {notifications.map((notification) => (
+          {notifications.filter(n => showUnreadOnly ? !n.isRead : true).map((notification) => (
             <div 
               key={notification.id} 
-              className={`p-5 rounded-2xl border transition-all ${
+              onClick={() => {
+                if (!notification.isRead) markAsRead(notification.id);
+                if (notification.actionUrl) router.push(notification.actionUrl);
+              }}
+              className={`p-5 rounded-2xl border transition-all cursor-pointer hover:shadow-md ${
                 notification.isRead 
                   ? 'bg-white dark:bg-slate-900/50 border-slate-200 dark:border-slate-800' 
                   : 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-500/30 shadow-[0_0_15px_rgba(99,102,241,0.05)] dark:shadow-[0_0_15px_rgba(99,102,241,0.1)]'
@@ -112,21 +135,11 @@ export default function NotificationsPage() {
                 </div>
                 <div className="flex-1">
                   <p className={`text-lg ${notification.isRead ? 'text-slate-600 dark:text-slate-300' : 'text-slate-900 dark:text-white font-medium'}`}>
-                    {notification.message}
+                    {notification.message.length > 50 ? notification.message.substring(0, 50) + '...' : notification.message}
                   </p>
                   <p className="text-sm text-slate-500 mt-1">
                     {new Date(notification.createdAtUtc).toLocaleString()}
                   </p>
-                  
-                  {notification.actionUrl && (
-                    <Link 
-                      href={notification.actionUrl}
-                      onClick={() => !notification.isRead && markAsRead(notification.id)}
-                      className="inline-block mt-3 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
-                    >
-                      View details &rarr;
-                    </Link>
-                  )}
                 </div>
                 {!notification.isRead && (
                   <button 

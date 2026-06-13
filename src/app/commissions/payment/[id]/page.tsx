@@ -44,9 +44,14 @@ export default function PaymentPage() {
     return () => clearTimeout(timer);
   }, [paymentState]);
 
-  const handlePayment = (e: React.FormEvent) => {
+  const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setPaymentState('loading');
+    try {
+      await api.get(`/payments/${orderId}/qr`);
+    } catch (err) {
+      console.error("Failed to generate QR or transition state", err);
+    }
   };
 
   const handleConfirmPayment = async () => {

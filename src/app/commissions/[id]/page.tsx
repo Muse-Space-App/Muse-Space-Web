@@ -1,16 +1,18 @@
 "use client";
-import { useParams } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
+import { useNotification } from '@/context/NotificationContext';
 
 export default function Workspace() {
   const params = useParams();
   const rawOrderId = Array.isArray(params?.id) ? params.id[0] : (params?.id as string);
   const orderId = rawOrderId;
-  
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
+  const { notifications } = useNotification();
   
   const [activeOrders, setActiveOrders] = useState<any[]>([]);
   const [activeOrder, setActiveOrder] = useState<any | null>(null);
@@ -18,6 +20,12 @@ export default function Workspace() {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
 
   // Fetch active orders
   useEffect(() => {
@@ -54,23 +62,34 @@ export default function Workspace() {
     if (user) fetchOrders();
   }, [user, orderId]);
 
+  const fetchMessages = useCallback(async () => {
+    if (!activeOrder) return;
+    try {
+      const res = await api.get(`/commissions/${activeOrder.id}/messages?pageSize=100`);
+      if (res.data?.isSuccess) {
+        // Sort messages by CreatedAtUtc
+        const msgs = (res.data.data.items || []).sort((a: any, b: any) => new Date(a.createdAtUtc).getTime() - new Date(b.createdAtUtc).getTime());
+        setMessages(msgs);
+      }
+    } catch (err) {
+      console.error('Failed to load messages', err);
+    }
+  }, [activeOrder]);
+
   // Fetch messages when active order changes
   useEffect(() => {
-    const fetchMessages = async () => {
-      if (!activeOrder) return;
-      try {
-        const res = await api.get(`/commissions/${activeOrder.id}/messages?pageSize=100`);
-        if (res.data?.isSuccess) {
-          // Sort messages by CreatedAtUtc
-          const msgs = (res.data.data.items || []).sort((a: any, b: any) => new Date(a.createdAtUtc).getTime() - new Date(b.createdAtUtc).getTime());
-          setMessages(msgs);
-        }
-      } catch (err) {
-        console.error('Failed to load messages', err);
-      }
-    };
     fetchMessages();
-  }, [activeOrder]);
+  }, [fetchMessages]);
+
+  // Sync real-time messages via notifications
+  useEffect(() => {
+    if (notifications.length > 0) {
+      const latestNotification = notifications[0];
+      if (latestNotification.type === 'CommissionMessage' && latestNotification.actionUrl?.includes(orderId)) {
+        fetchMessages();
+      }
+    }
+  }, [notifications, orderId, fetchMessages]);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -89,6 +108,15 @@ export default function Workspace() {
       }
     } catch (err) {
       console.error('Failed to send message', err);
+    }
+  };
+
+  const handleUpdateStatus = async (status: number) => {
+    try {
+      await api.patch(`/commissions/${activeOrder.id}/status`, { status });
+      setActiveOrder({ ...activeOrder, status });
+    } catch (err) {
+      console.error('Failed to update status', err);
     }
   };
 
@@ -298,8 +326,8 @@ export default function Workspace() {
           <div className="pt-4 border-t border-slate-200 dark:border-white/10">
              {activeOrder.status === 0 && isArtist ? (
                 <div className="flex gap-2">
-                  <button className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all">Accept</button>
-                  <button className="flex-1 py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold transition-all">Reject</button>
+                  <button onClick={() => handleUpdateStatus(1)} className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all">Accept</button>
+                  <button onClick={() => handleUpdateStatus(3)} className="flex-1 py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold transition-all">Reject</button>
                 </div>
              ) : activeOrder.status === 4 && isArtist ? (
                <Link 
@@ -309,7 +337,7 @@ export default function Workspace() {
                  <span className="material-symbols-outlined">inventory_2</span>
                  Deliver Artwork
                </Link>
-             ) : activeOrder.status === 0 && !isArtist ? (
+             ) : activeOrder.status === 1 && !isArtist ? (
                  <Link 
                    href={`/commissions/payment/${activeOrder.id}`}
                    className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"

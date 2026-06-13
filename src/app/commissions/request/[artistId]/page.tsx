@@ -3,14 +3,22 @@ import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { UserProfileResponse } from '@/app/search/page';
+import { useAuth } from '@/context/AuthContext';
 
 type Step = 'form' | 'waiting_approval' | 'payment' | 'success';
 
 export default function RequestCommission() {
   const { artistId } = useParams();
   const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
   const [step, setStep] = useState<Step>('form');
   
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, authLoading, router]);
+
   // Payment State
   const [paymentMethod, setPaymentMethod] = useState('');
 
