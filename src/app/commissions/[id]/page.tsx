@@ -19,6 +19,9 @@ export default function Workspace() {
   
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -98,16 +101,40 @@ export default function Workspace() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim() || !activeOrder) return;
+    if ((!newMessage.trim() && !attachment) || !activeOrder || isUploading) return;
 
     try {
-      const res = await api.post(`/commissions/${activeOrder.id}/messages`, { content: newMessage });
+      setIsUploading(true);
+      let attachmentUrl = null;
+      let attachmentType = null;
+
+      if (attachment) {
+        const formData = new FormData();
+        formData.append('file', attachment);
+        const uploadRes = await api.post('/Media/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        if (uploadRes.data?.isSuccess) {
+          attachmentUrl = uploadRes.data.data.url;
+          attachmentType = uploadRes.data.data.type;
+        }
+      }
+
+      const res = await api.post(`/commissions/${activeOrder.id}/messages`, { 
+        content: newMessage,
+        attachmentUrl,
+        attachmentType
+      });
+      
       if (res.data?.isSuccess) {
         setMessages([...messages, res.data.data]);
         setNewMessage('');
+        setAttachment(null);
       }
     } catch (err) {
       console.error('Failed to send message', err);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -232,6 +259,20 @@ export default function Workspace() {
                         ? 'bg-indigo-600 text-white rounded-br-sm' 
                         : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-white/5 rounded-bl-sm'
                     }`}>
+                      {msg.attachmentUrl && (
+                        <div className="mb-2">
+                          {msg.attachmentType?.startsWith('image/') ? (
+                            <img src={msg.attachmentUrl} alt="attachment" className="max-w-xs max-h-48 rounded-lg object-contain cursor-pointer" onClick={() => window.open(msg.attachmentUrl, '_blank')} />
+                          ) : msg.attachmentType?.startsWith('video/') ? (
+                            <video src={msg.attachmentUrl} controls className="max-w-xs max-h-48 rounded-lg object-contain" />
+                          ) : (
+                            <a href={msg.attachmentUrl} target="_blank" rel="noreferrer" className="underline flex items-center gap-1">
+                              <span className="material-symbols-outlined text-sm">attach_file</span>
+                              File
+                            </a>
+                          )}
+                        </div>
+                      )}
                       <p className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">{msg.content}</p>
                     </div>
                     <span className="text-xs text-slate-400 mt-1 px-1">{new Date(msg.createdAtUtc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -244,29 +285,63 @@ export default function Workspace() {
         </div>
 
         <div className="p-4 sm:p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-white/10">
-          <form onSubmit={handleSendMessage} className="flex items-end gap-3">
-            <div className="flex-1 relative">
-              <textarea 
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage(e);
+          <form onSubmit={handleSendMessage} className="flex flex-col gap-3">
+            {attachment && (
+              <div className="flex items-center gap-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-lg w-fit">
+                <span className="material-symbols-outlined text-sm">attach_file</span>
+                <span className="text-sm truncate max-w-[200px]">{attachment.name}</span>
+                <button type="button" onClick={() => setAttachment(null)} className="hover:text-red-500 transition-colors ml-2">
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+            )}
+            <div className="flex items-end gap-3">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="p-3 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-100 dark:bg-slate-800 rounded-xl transition-colors shrink-0"
+                disabled={isUploading}
+              >
+                <span className="material-symbols-outlined">attach_file</span>
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setAttachment(e.target.files[0]);
                   }
                 }}
-                placeholder="Type a message..." 
-                className="w-full bg-slate-100 dark:bg-slate-950/50 border border-transparent focus:border-indigo-500/50 rounded-2xl py-3 px-5 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none max-h-32 min-h-[52px]"
-                rows={1}
               />
+              <div className="flex-1 relative">
+                <textarea 
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e);
+                    }
+                  }}
+                  disabled={isUploading}
+                  placeholder="Type a message..." 
+                  className="w-full bg-slate-100 dark:bg-slate-950/50 border border-transparent focus:border-indigo-500/50 rounded-2xl py-3 px-5 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none max-h-32 min-h-[52px]"
+                  rows={1}
+                />
+              </div>
+              <button 
+                type="submit" 
+                disabled={(!newMessage.trim() && !attachment) || isUploading}
+                className="p-3 bg-indigo-600 disabled:opacity-50 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all shrink-0 flex items-center justify-center"
+              >
+                {isUploading ? (
+                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <span className="material-symbols-outlined">send</span>
+                )}
+              </button>
             </div>
-            <button 
-              type="submit" 
-              disabled={!newMessage.trim()}
-              className="p-3 bg-indigo-600  disabled:opacity-50 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all shrink-0"
-            >
-              <span className="material-symbols-outlined">send</span>
-            </button>
           </form>
         </div>
       </div>

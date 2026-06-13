@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
@@ -42,7 +42,8 @@ export default function GroupDetails() {
             author: p.authorUsername || 'User',
             time: new Date(p.createdAtUtc).toLocaleDateString(),
             content: p.content,
-            image: undefined,
+            image: p.attachmentUrl,
+            attachmentType: p.attachmentType,
             likes: 0,
             comments: 0,
             userLiked: false,
@@ -79,7 +80,8 @@ export default function GroupDetails() {
             author: p.authorUsername || 'User',
             time: p.createdAtUtc ? new Date(p.createdAtUtc).toLocaleDateString() : 'Just now',
             content: p.content,
-            image: undefined,
+            image: p.attachmentUrl,
+            attachmentType: p.attachmentType,
             likes: 0,
             comments: 0,
             userLiked: false,
@@ -119,7 +121,9 @@ export default function GroupDetails() {
     }
   };
 
-  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [attachedImage, setAttachedImage] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsView, setSettingsView] = useState<'menu' | 'editInfo' | 'editRules' | 'manageMembers'>('menu');
   const [editGroupData, setEditGroupData] = useState({ ...group });
@@ -147,10 +151,30 @@ export default function GroupDetails() {
   };
 
   const handlePostSubmit = async () => {
-    if (!postText.trim() && !attachedImage) return;
+    if ((!postText.trim() && !attachedImage) || isUploading) return;
     
     try {
-      const res = await api.post(`/groups/${id}/posts`, { content: postText });
+      setIsUploading(true);
+      let attachmentUrl = null;
+      let attachmentType = null;
+
+      if (attachedImage) {
+        const formData = new FormData();
+        formData.append('file', attachedImage);
+        const uploadRes = await api.post('/Media/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        if (uploadRes.data?.isSuccess) {
+          attachmentUrl = uploadRes.data.data.url;
+          attachmentType = uploadRes.data.data.type;
+        }
+      }
+
+      const res = await api.post(`/groups/${id}/posts`, { 
+        content: postText,
+        attachmentUrl,
+        attachmentType
+      });
       if (res.data?.isSuccess) {
         const p = res.data.data;
         const newPost = {
@@ -158,7 +182,8 @@ export default function GroupDetails() {
           author: p.authorUsername || 'You',
           time: p.createdAtUtc ? new Date(p.createdAtUtc).toLocaleDateString() : 'Just now',
           content: p.content,
-          image: undefined,
+          image: p.attachmentUrl,
+          attachmentType: p.attachmentType,
           likes: 0,
           comments: 0,
           userLiked: false,
@@ -170,6 +195,8 @@ export default function GroupDetails() {
       }
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -196,25 +223,12 @@ export default function GroupDetails() {
     }));
   };
 
-  const handleSimulateAttachImage = () => {
-    // Simulate attaching an image
-    if (!attachedImage) {
-      setAttachedImage("https://res.cloudinary.com/dzpv8dz7e/image/upload/v1780888547/rrxgc4xrzgk3rtnpcytz.jpg");
-    } else {
-      setAttachedImage(null);
-    }
-  };
-
-  const recentImages = [
-    "https://res.cloudinary.com/dzpv8dz7e/image/upload/v1780888547/rrxgc4xrzgk3rtnpcytz.jpg",
-    "https://res.cloudinary.com/dzpv8dz7e/image/upload/v1780888547/rrxgc4xrzgk3rtnpcytz.jpg",
-    "https://res.cloudinary.com/dzpv8dz7e/image/upload/v1780888547/rrxgc4xrzgk3rtnpcytz.jpg",
-    "https://res.cloudinary.com/dzpv8dz7e/image/upload/v1780888547/rrxgc4xrzgk3rtnpcytz.jpg"
-  ];
 
   if (isLoading || !group) {
     return <div className="max-w-6xl mx-auto py-12 text-center text-slate-500">Loading group...</div>;
   }
+
+  const recentImages = posts.filter(p => p.image && p.attachmentType?.startsWith('image/')).map(p => p.image);
 
   return (
     <div className="max-w-6xl mx-auto pb-12">
@@ -339,11 +353,12 @@ export default function GroupDetails() {
                   ></textarea>
                   
                   {attachedImage && (
-                    <div className="relative w-32 h-32 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
-                      <img src={attachedImage} alt="Attached" className="w-full h-full object-cover" />
+                    <div className="flex items-center gap-2 p-3 bg-slate-100 dark:bg-slate-800 rounded-xl w-fit">
+                      <span className="material-symbols-outlined text-indigo-500">attach_file</span>
+                      <span className="text-sm font-medium truncate max-w-[200px] text-slate-700 dark:text-slate-300">{attachedImage.name}</span>
                       <button 
                         onClick={() => setAttachedImage(null)}
-                        className="absolute top-1 right-1 w-6 h-6 bg-black/50 hover:bg-red-500 text-white rounded-full flex items-center justify-center transition-colors"
+                        className="w-6 h-6 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 hover:text-red-500 rounded-full flex items-center justify-center transition-colors"
                       >
                         <span className="material-symbols-outlined text-[14px]">close</span>
                       </button>
@@ -352,12 +367,23 @@ export default function GroupDetails() {
                   
                   <div className="flex justify-between items-center">
                     <div className="flex gap-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setAttachedImage(e.target.files[0]);
+                          }
+                        }}
+                      />
                       <button 
-                        onClick={handleSimulateAttachImage}
+                        onClick={() => fileInputRef.current?.click()}
                         className={`w-9 h-9 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 flex items-center justify-center transition-colors tooltip ${attachedImage ? 'text-indigo-500 bg-indigo-50 dark:bg-indigo-500/20' : 'text-slate-500 dark:text-slate-400'}`} 
-                        title="Attach Image"
+                        title="Attach File"
+                        disabled={isUploading}
                       >
-                        <span className="material-symbols-outlined text-[20px]">image</span>
+                        <span className="material-symbols-outlined text-[20px]">attach_file</span>
                       </button>
                       <button className="w-9 h-9 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 transition-colors tooltip" title="Attach Link">
                         <span className="material-symbols-outlined text-[20px]">link</span>
@@ -365,9 +391,10 @@ export default function GroupDetails() {
                     </div>
                     <button 
                       onClick={handlePostSubmit}
-                      disabled={!postText.trim() && !attachedImage}
-                      className="px-5 py-2 bg-indigo-600  text-white rounded-lg font-bold text-sm shadow-[0_0_15px_rgba(79,70,229,0.3)] disabled:opacity-50 transition-all"
+                      disabled={(!postText.trim() && !attachedImage) || isUploading}
+                      className="px-5 py-2 bg-indigo-600  text-white rounded-lg font-bold text-sm shadow-[0_0_15px_rgba(79,70,229,0.3)] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                     >
+                      {isUploading && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                       Post
                     </button>
                   </div>
@@ -408,8 +435,20 @@ export default function GroupDetails() {
                     </p>
                     
                     {post.image && (
-                      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 mb-4 bg-slate-950 max-h-[400px]">
-                        <img src={post.image} alt="Post attachment" className="w-full h-full object-cover" />
+                      <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 mb-4 bg-slate-950 max-h-[400px] flex items-center justify-center relative group">
+                        {post.attachmentType?.startsWith('image/') ? (
+                          <img src={post.image} alt="Post attachment" className="w-full h-full object-contain max-h-[400px] cursor-pointer" onClick={() => window.open(post.image, '_blank')} />
+                        ) : post.attachmentType?.startsWith('video/') ? (
+                          <video src={post.image} controls className="w-full h-full max-h-[400px] object-contain" />
+                        ) : (
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 p-6 flex flex-col items-center justify-center text-center">
+                            <span className="material-symbols-outlined text-4xl text-indigo-500 mb-2">description</span>
+                            <a href={post.image} target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline flex items-center gap-1">
+                              Download Attachment
+                              <span className="material-symbols-outlined text-sm">open_in_new</span>
+                            </a>
+                          </div>
+                        )}
                       </div>
                     )}
                     
