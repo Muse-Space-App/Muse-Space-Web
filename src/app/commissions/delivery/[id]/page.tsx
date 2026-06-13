@@ -4,7 +4,8 @@ import { useRouter, useParams } from 'next/navigation';
 import api from '@/lib/api';
 
 export default function DeliveryPage() {
-  const { orderId } = useParams();
+  const params = useParams();
+  const orderId = Array.isArray(params?.id) ? params.id[0] : (params?.id as string);
   const router = useRouter();
   const [isCompleted, setIsCompleted] = useState(false);
   const [rating, setRating] = useState(0);

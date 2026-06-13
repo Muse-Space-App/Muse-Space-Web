@@ -6,32 +6,41 @@ import api from '@/lib/api';
 type PaymentState = 'checkout' | 'loading' | 'instruction' | 'success' | 'failure';
 
 export default function PaymentPage() {
-  const { orderId } = useParams();
+  const params = useParams();
+  const orderId = Array.isArray(params?.id) ? params.id[0] : (params?.id as string);
   const router = useRouter();
   const [selectedMethod, setSelectedMethod] = useState<string>('virtual_account');
   const [paymentState, setPaymentState] = useState<PaymentState>('checkout');
 
   const [orderDetails, setOrderDetails] = useState<any>(null);
+  const [errorMsg, setErrorMsg] = useState<string>('');
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+
+  const fetchOrder = async () => {
+    if (!orderId) return;
+    try {
+      setErrorMsg('');
+      const res = await api.get(`/commissions/${orderId}`);
+      if (res.data?.isSuccess) {
+        setOrderDetails({
+          id: res.data.data.id,
+          artist: res.data.data.artistUsername,
+          service: res.data.data.title,
+          basePrice: res.data.data.price,
+          addons: [],
+          total: res.data.data.price
+        });
+      } else {
+        setErrorMsg(res.data?.message || 'Failed to load commission details.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.response?.data?.message || err.message || 'An error occurred while fetching payment details.');
+    }
+  };
 
   useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const res = await api.get(`/commissions/${orderId}`);
-        if (res.data?.isSuccess) {
-          setOrderDetails({
-            id: res.data.data.id,
-            artist: res.data.data.artistUsername,
-            service: res.data.data.title,
-            basePrice: res.data.data.price,
-            addons: [],
-            total: res.data.data.price
-          });
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    if (orderId) fetchOrder();
+    fetchOrder();
   }, [orderId]);
 
   useEffect(() => {
@@ -48,7 +57,10 @@ export default function PaymentPage() {
     e.preventDefault();
     setPaymentState('loading');
     try {
-      await api.get(`/payments/${orderId}/qr`);
+      const res = await api.get(`/payments/${orderId}/qr`);
+      if (res.data?.isSuccess) {
+        setQrCodeUrl(res.data.data);
+      }
     } catch (err) {
       console.error("Failed to generate QR or transition state", err);
     }
@@ -68,7 +80,30 @@ export default function PaymentPage() {
   };
 
   if (!orderDetails) {
-    return <div className="min-h-screen flex items-center justify-center">Loading payment details...</div>;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-[#060913] p-4 text-center">
+        {errorMsg ? (
+          <div className="bg-white/80 dark:bg-slate-900/40 p-8 rounded-3xl border border-red-500/20 shadow-xl max-w-md w-full">
+            <span className="material-symbols-outlined text-red-500 text-5xl mb-4">error</span>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Error Loading Payment</h2>
+            <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm">{errorMsg}</p>
+            <button 
+              onClick={fetchOrder}
+              className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-all"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin mb-4"></div>
+            <p className="text-slate-500 dark:text-slate-400 font-medium">Loading payment details...</p>
+            <p className="text-xs text-slate-400 mt-2">Order ID: {orderId || 'undefined'}</p>
+            <p className="text-[10px] text-slate-400/50 mt-1">Params: {JSON.stringify(params)}</p>
+          </div>
+        )}
+      </div>
+    );
   }
 
   const renderCheckout = () => (
@@ -197,15 +232,24 @@ export default function PaymentPage() {
           </p>
         </div>
         
-        <div className="mb-6">
-          <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">Nomor Virtual Account</p>
-          <div className="flex items-center justify-between bg-white dark:bg-[#060913] border border-slate-200 dark:border-white/10 rounded-xl p-4 shadow-sm">
-            <span className="font-mono text-xl md:text-2xl font-bold tracking-wider text-slate-900 dark:text-white">88301 0812 3456 789</span>
-            <button className="p-2 text-indigo-500 hover:bg-indigo-50 dark:/10 rounded-lg transition-colors group" title="Copy to clipboard">
-              <span className="material-symbols-outlined group-hover:scale-110 transition-transform">content_copy</span>
-            </button>
+        {selectedMethod === 'ewallet' && qrCodeUrl ? (
+          <div className="mb-6 flex flex-col items-center justify-center">
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">Scan QRIS code to pay</p>
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 dark:border-white/10 shadow-md">
+              <img src={qrCodeUrl} alt="Payment QR Code" className="w-48 h-48" />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mb-6">
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">Nomor Virtual Account</p>
+            <div className="flex items-center justify-between bg-white dark:bg-[#060913] border border-slate-200 dark:border-white/10 rounded-xl p-4 shadow-sm">
+              <span className="font-mono text-xl md:text-2xl font-bold tracking-wider text-slate-900 dark:text-white">88301 0812 3456 789</span>
+              <button className="p-2 text-indigo-500 hover:bg-indigo-50 dark:/10 rounded-lg transition-colors group" title="Copy to clipboard">
+                <span className="material-symbols-outlined group-hover:scale-110 transition-transform">content_copy</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="flex justify-between items-center mb-6">
           <p className="text-slate-500 dark:text-slate-400 text-sm">Total Tagihan</p>

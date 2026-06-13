@@ -41,6 +41,49 @@ export default function Dashboard() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const getStatusText = (status: number) => {
+    switch (status) {
+      case 0: return 'Pending';
+      case 1: return 'Accepted';
+      case 2: return 'Pending Verification';
+      case 3: return 'Rejected';
+      case 4: return 'In Progress';
+      case 5: return 'Completed';
+      case 6: return 'Cancelled';
+      default: return 'Unknown';
+    }
+  };
+
+  const getStatusClass = (status: number) => {
+    switch (status) {
+      case 0: // Pending
+        return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400';
+      case 1: // Accepted
+      case 4: // InProgress
+        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400';
+      case 2: // PendingVerification
+        return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400';
+      case 3: // Rejected
+      case 6: // Cancelled
+        return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-400';
+      case 5: // Completed
+        return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400';
+      default:
+        return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400';
+    }
+  };
+
+  const getStatusIcon = (status: number) => {
+    switch (status) {
+      case 0: return 'pending';
+      case 2: return 'hourglass_empty';
+      case 5: return 'check_circle';
+      case 3:
+      case 6: return 'cancel';
+      default: return 'sync';
+    }
+  };
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -201,10 +244,7 @@ export default function Dashboard() {
                 <span className="material-symbols-outlined text-emerald-500">design_services</span>
                 My Commission Requests
               </h2>
-              <div className="flex gap-3">
-                <Link href="/commissions/list" className="text-indigo-600 dark:text-indigo-400 text-sm font-bold hover:underline">View All Commissions</Link>
-                <Link href="/commissions" className="text-indigo-600 dark:text-indigo-400 text-sm font-bold hover:underline">Browse Artists</Link>
-              </div>
+              <Link href="/commissions" className="text-indigo-600 dark:text-indigo-400 text-sm font-bold hover:underline">Browse Artists</Link>
             </div>
             
             <div className="bg-white/50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden">
@@ -226,17 +266,11 @@ export default function Dashboard() {
                         <td className="p-4 text-slate-600 dark:text-slate-300">Custom Request</td>
                         <td className="p-4 text-slate-500 dark:text-slate-400 text-sm">{new Date(comm.createdAtUtc).toLocaleDateString()}</td>
                         <td className="p-4">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                            comm.status === 'Accepted' || comm.status === 'InProgress' 
-                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400'
-                              : comm.status === 'Pending'
-                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400'
-                              : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
-                          }`}>
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusClass(comm.status)}`}>
                             <span className="material-symbols-outlined text-[14px]">
-                              {comm.status === 'Pending' ? 'pending' : comm.status === 'Completed' ? 'check_circle' : 'sync'}
+                              {getStatusIcon(comm.status)}
                             </span>
-                            {comm.status}
+                            {getStatusText(comm.status)}
                           </span>
                         </td>
                         <td className="p-4 text-right">

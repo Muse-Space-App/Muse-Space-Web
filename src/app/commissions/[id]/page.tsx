@@ -1,34 +1,23 @@
 "use client";
-import { useRouter, useParams } from 'next/navigation';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useParams } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
-import { useNotifications } from '@/context/NotificationContext';
 
 export default function Workspace() {
   const params = useParams();
   const rawOrderId = Array.isArray(params?.id) ? params.id[0] : (params?.id as string);
   const orderId = rawOrderId;
-  const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
-  const { notifications } = useNotifications();
+  
+  const { user } = useAuth();
   
   const [activeOrders, setActiveOrders] = useState<any[]>([]);
   const [activeOrder, setActiveOrder] = useState<any | null>(null);
   
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [attachment, setAttachment] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, authLoading, router]);
 
   // Fetch active orders
   useEffect(() => {
@@ -65,34 +54,23 @@ export default function Workspace() {
     if (user) fetchOrders();
   }, [user, orderId]);
 
-  const fetchMessages = useCallback(async () => {
-    if (!activeOrder) return;
-    try {
-      const res = await api.get(`/commissions/${activeOrder.id}/messages?pageSize=100`);
-      if (res.data?.isSuccess) {
-        // Sort messages by CreatedAtUtc
-        const msgs = (res.data.data.items || []).sort((a: any, b: any) => new Date(a.createdAtUtc).getTime() - new Date(b.createdAtUtc).getTime());
-        setMessages(msgs);
-      }
-    } catch (err) {
-      console.error('Failed to load messages', err);
-    }
-  }, [activeOrder]);
-
   // Fetch messages when active order changes
   useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
-
-  // Sync real-time messages via notifications
-  useEffect(() => {
-    if (notifications.length > 0) {
-      const latestNotification = notifications[0];
-      if (latestNotification.type === 'CommissionMessage' && latestNotification.actionUrl?.includes(orderId)) {
-        fetchMessages();
+    const fetchMessages = async () => {
+      if (!activeOrder) return;
+      try {
+        const res = await api.get(`/commissions/${activeOrder.id}/messages?pageSize=100`);
+        if (res.data?.isSuccess) {
+          // Sort messages by CreatedAtUtc
+          const msgs = (res.data.data.items || []).sort((a: any, b: any) => new Date(a.createdAtUtc).getTime() - new Date(b.createdAtUtc).getTime());
+          setMessages(msgs);
+        }
+      } catch (err) {
+        console.error('Failed to load messages', err);
       }
-    }
-  }, [notifications, orderId, fetchMessages]);
+    };
+    fetchMessages();
+  }, [activeOrder]);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -101,49 +79,16 @@ export default function Workspace() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if ((!newMessage.trim() && !attachment) || !activeOrder || isUploading) return;
+    if (!newMessage.trim() || !activeOrder) return;
 
     try {
-      setIsUploading(true);
-      let attachmentUrl = null;
-      let attachmentType = null;
-
-      if (attachment) {
-        const formData = new FormData();
-        formData.append('file', attachment);
-        const uploadRes = await api.post('/Media/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        if (uploadRes.data?.isSuccess) {
-          attachmentUrl = uploadRes.data.data.url;
-          attachmentType = uploadRes.data.data.type;
-        }
-      }
-
-      const res = await api.post(`/commissions/${activeOrder.id}/messages`, { 
-        content: newMessage,
-        attachmentUrl,
-        attachmentType
-      });
-      
+      const res = await api.post(`/commissions/${activeOrder.id}/messages`, { content: newMessage });
       if (res.data?.isSuccess) {
         setMessages([...messages, res.data.data]);
         setNewMessage('');
-        setAttachment(null);
       }
     } catch (err) {
       console.error('Failed to send message', err);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleUpdateStatus = async (status: number) => {
-    try {
-      await api.patch(`/commissions/${activeOrder.id}/status`, { status });
-      setActiveOrder({ ...activeOrder, status });
-    } catch (err) {
-      console.error('Failed to update status', err);
     }
   };
 
@@ -167,6 +112,37 @@ export default function Workspace() {
       case 5: return 'Completed';
       case 6: return 'Cancelled';
       default: return 'Unknown';
+    }
+  };
+
+  const handleUpdateStatus = async (newStatus: number) => {
+    if (!activeOrder) return;
+    try {
+      const res = await api.patch(`/commissions/${activeOrder.id}/status`, { status: newStatus });
+      if (res.data?.isSuccess) {
+        const updated = res.data.data;
+        setActiveOrder(updated);
+        setActiveOrders(prev => prev.map(o => o.id === updated.id ? updated : o));
+      }
+    } catch (err) {
+      console.error('Failed to update status', err);
+    }
+  };
+
+  const handleVerifyPayment = async () => {
+    if (!activeOrder) return;
+    try {
+      const res = await api.post(`/payments/${activeOrder.id}/verify`);
+      if (res.data?.isSuccess) {
+        const detailRes = await api.get(`/commissions/${activeOrder.id}`);
+        if (detailRes.data?.isSuccess) {
+          const updated = detailRes.data.data;
+          setActiveOrder(updated);
+          setActiveOrders(prev => prev.map(o => o.id === updated.id ? updated : o));
+        }
+      }
+    } catch (err) {
+      console.error('Failed to verify payment', err);
     }
   };
 
@@ -259,20 +235,6 @@ export default function Workspace() {
                         ? 'bg-indigo-600 text-white rounded-br-sm' 
                         : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-white/5 rounded-bl-sm'
                     }`}>
-                      {msg.attachmentUrl && (
-                        <div className="mb-2">
-                          {msg.attachmentType?.startsWith('image/') ? (
-                            <img src={msg.attachmentUrl} alt="attachment" className="max-w-xs max-h-48 rounded-lg object-contain cursor-pointer" onClick={() => window.open(msg.attachmentUrl, '_blank')} />
-                          ) : msg.attachmentType?.startsWith('video/') ? (
-                            <video src={msg.attachmentUrl} controls className="max-w-xs max-h-48 rounded-lg object-contain" />
-                          ) : (
-                            <a href={msg.attachmentUrl} target="_blank" rel="noreferrer" className="underline flex items-center gap-1">
-                              <span className="material-symbols-outlined text-sm">attach_file</span>
-                              File
-                            </a>
-                          )}
-                        </div>
-                      )}
                       <p className="whitespace-pre-wrap text-sm sm:text-base leading-relaxed">{msg.content}</p>
                     </div>
                     <span className="text-xs text-slate-400 mt-1 px-1">{new Date(msg.createdAtUtc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -285,63 +247,29 @@ export default function Workspace() {
         </div>
 
         <div className="p-4 sm:p-6 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-white/10">
-          <form onSubmit={handleSendMessage} className="flex flex-col gap-3">
-            {attachment && (
-              <div className="flex items-center gap-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 rounded-lg w-fit">
-                <span className="material-symbols-outlined text-sm">attach_file</span>
-                <span className="text-sm truncate max-w-[200px]">{attachment.name}</span>
-                <button type="button" onClick={() => setAttachment(null)} className="hover:text-red-500 transition-colors ml-2">
-                  <span className="material-symbols-outlined text-sm">close</span>
-                </button>
-              </div>
-            )}
-            <div className="flex items-end gap-3">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="p-3 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-100 dark:bg-slate-800 rounded-xl transition-colors shrink-0"
-                disabled={isUploading}
-              >
-                <span className="material-symbols-outlined">attach_file</span>
-              </button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setAttachment(e.target.files[0]);
+          <form onSubmit={handleSendMessage} className="flex items-end gap-3">
+            <div className="flex-1 relative">
+              <textarea 
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage(e);
                   }
                 }}
+                placeholder="Type a message..." 
+                className="w-full bg-slate-100 dark:bg-slate-950/50 border border-transparent focus:border-indigo-500/50 rounded-2xl py-3 px-5 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none max-h-32 min-h-[52px]"
+                rows={1}
               />
-              <div className="flex-1 relative">
-                <textarea 
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage(e);
-                    }
-                  }}
-                  disabled={isUploading}
-                  placeholder="Type a message..." 
-                  className="w-full bg-slate-100 dark:bg-slate-950/50 border border-transparent focus:border-indigo-500/50 rounded-2xl py-3 px-5 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none max-h-32 min-h-[52px]"
-                  rows={1}
-                />
-              </div>
-              <button 
-                type="submit" 
-                disabled={(!newMessage.trim() && !attachment) || isUploading}
-                className="p-3 bg-indigo-600 disabled:opacity-50 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all shrink-0 flex items-center justify-center"
-              >
-                {isUploading ? (
-                  <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <span className="material-symbols-outlined">send</span>
-                )}
-              </button>
             </div>
+            <button 
+              type="submit" 
+              disabled={!newMessage.trim()}
+              className="p-3 bg-indigo-600  disabled:opacity-50 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all shrink-0"
+            >
+              <span className="material-symbols-outlined">send</span>
+            </button>
           </form>
         </div>
       </div>
@@ -401,24 +329,19 @@ export default function Workspace() {
           <div className="pt-4 border-t border-slate-200 dark:border-white/10">
              {activeOrder.status === 0 && isArtist ? (
                 <div className="flex gap-2">
-                  <button onClick={() => handleUpdateStatus(1)} className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all">Accept</button>
-                  <button onClick={() => handleUpdateStatus(3)} className="flex-1 py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold transition-all">Reject</button>
+                  <button 
+                    onClick={() => handleUpdateStatus(1)} 
+                    className="flex-1 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all"
+                  >
+                    Accept
+                  </button>
+                  <button 
+                    onClick={() => handleUpdateStatus(3)} 
+                    className="flex-1 py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold transition-all"
+                  >
+                    Reject
+                  </button>
                 </div>
-             ) : activeOrder.status === 2 && isArtist ? (
-                <button 
-                  onClick={async () => {
-                    try {
-                      await api.post(`/payments/${activeOrder.id}/verify`);
-                      setActiveOrder({ ...activeOrder, status: 4 });
-                    } catch (err) {
-                      console.error('Failed to verify payment', err);
-                    }
-                  }}
-                  className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
-                >
-                  <span className="material-symbols-outlined">verified</span>
-                  Verify Payment Received
-                </button>
              ) : activeOrder.status === 4 && isArtist ? (
                <Link 
                  href={`/commissions/delivery/${activeOrder.id}`}
@@ -427,14 +350,27 @@ export default function Workspace() {
                  <span className="material-symbols-outlined">inventory_2</span>
                  Deliver Artwork
                </Link>
-             ) : (activeOrder.status === 1 || activeOrder.status === 2) && !isArtist ? (
-                 <Link 
-                   href={`/commissions/payment/${activeOrder.id}`}
-                   className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
-                 >
-                   <span className="material-symbols-outlined">payments</span>
-                   {activeOrder.status === 2 ? 'Payment Pending Verification' : `Pay Now ($${activeOrder.price})`}
-                 </Link>
+             ) : activeOrder.status === 1 && !isArtist ? (
+                  <Link 
+                    href={`/commissions/payment/${activeOrder.id}`}
+                    className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
+                  >
+                    <span className="material-symbols-outlined">payments</span>
+                    Pay Now (${activeOrder.price})
+                  </Link>
+             ) : activeOrder.status === 2 && isArtist ? (
+               <button 
+                 onClick={handleVerifyPayment}
+                 className="w-full py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-bold shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]"
+               >
+                 <span className="material-symbols-outlined">verified</span>
+                 Verify Payment
+               </button>
+             ) : activeOrder.status === 2 && !isArtist ? (
+               <button className="w-full py-4 bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 rounded-xl font-bold cursor-not-allowed flex items-center justify-center gap-2">
+                 <span className="material-symbols-outlined">hourglass_empty</span>
+                 Awaiting Verification
+               </button>
              ) : (
                <button className="w-full py-4 bg-slate-200 dark:bg-white/5 text-slate-400 dark:text-slate-500 rounded-xl font-bold cursor-not-allowed flex items-center justify-center gap-2">
                  <span className="material-symbols-outlined">lock</span>
