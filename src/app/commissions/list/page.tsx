@@ -470,13 +470,12 @@ export default function CommissionsListPage() {
           ) : (
             <div className="space-y-3">
               {filtered.map((c) => (
-                <button
+                <div
                   key={c.id}
-                  onClick={() => setSelectedCommission(c)}
                   className="w-full text-left"
                 >
-                  <CommissionCard key={c.id} commission={c} isArtist={activeTab === 'received'} onClick={() => setSelectedCommission(c)} />
-                </button>
+                  <CommissionCard commission={c} isArtist={activeTab === 'received'} onClick={() => setSelectedCommission(c)} />
+                </div>
               ))}
             </div>
           )}

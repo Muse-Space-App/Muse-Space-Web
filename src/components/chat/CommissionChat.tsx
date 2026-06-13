@@ -48,7 +48,7 @@ export default function CommissionChat({ commissionId, mode, onClose, onToggleFu
     try {
       const res = await api.get(`/commissions/${commissionId}/messages`);
       if (res.data?.isSuccess) {
-        setMessages(res.data.data);
+        setMessages(res.data.data.items || []);
       }
     } catch (err) {
       console.error('Failed to load messages', err);
