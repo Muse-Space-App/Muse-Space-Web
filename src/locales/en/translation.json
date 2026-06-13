@@ -64,5 +64,32 @@
     "subtitle": "Selected artwork from the outer reaches of the imagination.",
     "no_images_found": "No images found",
     "try_searching": "Try searching for something else like \"space\" or \"dog\"."
+  },
+  "events": {
+    "explore_title": "Explore Events",
+    "explore_subtitle": "Discover upcoming virtual exhibitions, workshops, and artist meetups.",
+    "loading_events": "Loading events...",
+    "no_events_found": "No upcoming events found.",
+    "virtual_exhibition": "Virtual Exhibition",
+    "rsvp_now": "RSVP Now",
+    "rsvp_success_title": "Success!",
+    "rsvp_success_desc": "Your registration was successful! The ticket has been added to your dashboard.",
+    "btn_view_my_ticket": "View My Ticket",
+    "btn_close": "Close",
+    "rsvp_registration": "RSVP Registration",
+    "full_name": "Full Name",
+    "placeholder_full_name": "Enter your full name",
+    "email": "Email",
+    "placeholder_email": "Enter active email",
+    "agree_attendance": "I agree to attend this event online/offline according to the scheduled time.",
+    "btn_confirm_registration": "Confirm Registration",
+    "loading_event_details": "Loading event details...",
+    "event_not_found": "Event not found",
+    "back_to_groups": "Back to Groups",
+    "about_this_event": "About This Event",
+    "organizer": "Organizer",
+    "are_you_going": "Are you going?",
+    "free_for_members": "Free for all members",
+    "already_registered": "You are registered"
   }
 }

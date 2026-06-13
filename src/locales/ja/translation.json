@@ -64,5 +64,32 @@
     "subtitle": "想像力の果てから選ばれたアートワーク。",
     "no_images_found": "画像が見つかりません",
     "try_searching": "「宇宙」や「犬」など、別の言葉で検索してみてください。"
+  },
+  "events": {
+    "explore_title": "イベントを探す",
+    "explore_subtitle": "オンライン展示会、ワークショップ、アーティストの交流会を見つけましょう。",
+    "loading_events": "イベントを読み込み中...",
+    "no_events_found": "今後のイベントはありません。",
+    "virtual_exhibition": "バーチャル展示会",
+    "rsvp_now": "参加登録する",
+    "rsvp_success_title": "成功！",
+    "rsvp_success_desc": "参加登録が完了しました！チケットがダッシュボードに追加されました。",
+    "btn_view_my_ticket": "マイチケットを見る",
+    "btn_close": "閉じる",
+    "rsvp_registration": "参加登録（RSVP）",
+    "full_name": "氏名",
+    "placeholder_full_name": "氏名を入力してください",
+    "email": "メールアドレス",
+    "placeholder_email": "有効なメールアドレスを入力してください",
+    "agree_attendance": "指定された日時にオンラインまたはオフラインでこのイベントに参加することに同意します。",
+    "btn_confirm_registration": "登録を確定する",
+    "loading_event_details": "イベント詳細を読み込み中...",
+    "event_not_found": "イベントが見つかりません",
+    "back_to_groups": "グループに戻る",
+    "about_this_event": "イベントについて",
+    "organizer": "主催者",
+    "are_you_going": "参加しますか？",
+    "free_for_members": "すべてのメンバーが無料",
+    "already_registered": "参加登録済み"
   }
 }

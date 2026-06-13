@@ -64,5 +64,32 @@
     "subtitle": "来自想象力边缘的精选艺术品。",
     "no_images_found": "未找到图像",
     "try_searching": "尝试搜索其他内容，如“太空”或“狗”。"
+  },
+  "events": {
+    "explore_title": "探索活动",
+    "explore_subtitle": "发现即将举办的虚拟展览、研讨会和艺术家见面会。",
+    "loading_events": "正在加载活动...",
+    "no_events_found": "未找到即将举办的活动。",
+    "virtual_exhibition": "虚拟展览",
+    "rsvp_now": "立即预约",
+    "rsvp_success_title": "预约成功！",
+    "rsvp_success_desc": "您的预约已成功！门票已添加到您的个人中心。",
+    "btn_view_my_ticket": "查看我的门票",
+    "btn_close": "关闭",
+    "rsvp_registration": "活动预约登记",
+    "full_name": "姓名",
+    "placeholder_full_name": "请输入您的姓名",
+    "email": "电子邮箱",
+    "placeholder_email": "请输入有效的电子邮箱",
+    "agree_attendance": "我同意按计划时间在线/线下参加此次活动。",
+    "btn_confirm_registration": "确认预约",
+    "loading_event_details": "正在加载活动详情...",
+    "event_not_found": "未找到该活动",
+    "back_to_groups": "返回小组",
+    "about_this_event": "活动介绍",
+    "organizer": "主办方",
+    "are_you_going": "您会参加吗？",
+    "free_for_members": "所有会员免费",
+    "already_registered": "您已预约"
   }
 }

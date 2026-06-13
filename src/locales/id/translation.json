@@ -64,5 +64,32 @@
     "subtitle": "Karya seni terpilih dari batas luar imajinasi.",
     "no_images_found": "Gambar tidak ditemukan",
     "try_searching": "Coba cari sesuatu yang lain seperti \"luar angkasa\" atau \"anjing\"."
+  },
+  "events": {
+    "explore_title": "Jelajahi Acara",
+    "explore_subtitle": "Temukan pameran virtual, lokakarya, dan pertemuan artis mendatang.",
+    "loading_events": "Memuat acara...",
+    "no_events_found": "Tidak ada acara mendatang yang ditemukan.",
+    "virtual_exhibition": "Pameran Virtual",
+    "rsvp_now": "RSVP Sekarang",
+    "rsvp_success_title": "Sukses!",
+    "rsvp_success_desc": "Pendaftaran Anda berhasil! Tiket telah ditambahkan ke dashboard Anda.",
+    "btn_view_my_ticket": "Lihat Tiket Saya",
+    "btn_close": "Tutup",
+    "rsvp_registration": "Pendaftaran RSVP",
+    "full_name": "Nama Lengkap",
+    "placeholder_full_name": "Masukkan nama lengkap",
+    "email": "Email",
+    "placeholder_email": "Masukkan email aktif",
+    "agree_attendance": "Saya setuju untuk menghadiri acara ini secara daring/luring sesuai jadwal yang telah ditentukan.",
+    "btn_confirm_registration": "Konfirmasi Pendaftaran",
+    "loading_event_details": "Memuat detail acara...",
+    "event_not_found": "Acara tidak ditemukan",
+    "back_to_groups": "Kembali ke Grup",
+    "about_this_event": "Tentang Acara Ini",
+    "organizer": "Penyelenggara",
+    "are_you_going": "Apakah Anda akan datang?",
+    "free_for_members": "Gratis untuk semua anggota",
+    "already_registered": "Kamu Sudah Terdaftar"
   }
 }

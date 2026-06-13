@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 
 export default function EventDetails() {
+  const { t } = useTranslation();
   const params = useParams();
   const id = Array.isArray(params?.id) ? params.id[0] : (params?.id as string);
   const router = useRouter();
@@ -71,13 +73,13 @@ export default function EventDetails() {
     }
   };
 
-  if (isLoading) return <div className="p-8 text-center text-slate-500">Loading event details...</div>;
-  if (!eventData) return <div className="p-8 text-center text-red-500">Event not found</div>;
+  if (isLoading) return <div className="p-8 text-center text-slate-500">{t('events.loading_event_details', 'Loading event details...')}</div>;
+  if (!eventData) return <div className="p-8 text-center text-red-500">{t('events.event_not_found', 'Event not found')}</div>;
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <button onClick={() => router.back()} className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white mb-8 transition-colors font-semibold">
-        <span className="material-symbols-outlined">arrow_back</span> Back to Groups
+        <span className="material-symbols-outlined">arrow_back</span> {t('events.back_to_groups', 'Back to Groups')}
       </button>
 
       {/* Event Banner */}
@@ -100,7 +102,7 @@ export default function EventDetails() {
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-2 font-['Space_Grotesk']">{eventData.title}</h1>
           <p className="text-slate-600 dark:text-slate-300 text-lg flex items-center gap-2 font-medium">
             <span className="material-symbols-outlined text-sm">{eventData.isOnline ? 'videocam' : 'location_on'}</span>
-            {eventData.isOnline ? 'Virtual Exhibition' : eventData.location}
+            {eventData.isOnline ? t('events.virtual_exhibition', 'Virtual Exhibition') : eventData.location}
           </p>
         </div>
       </div>
@@ -108,14 +110,14 @@ export default function EventDetails() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none rounded-2xl p-8 whitespace-pre-wrap">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">About This Event</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">{t('events.about_this_event', 'About This Event')}</h2>
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed mb-4">
               {eventData.description}
             </p>
           </div>
 
           <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Organizer</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">{t('events.organizer', 'Organizer')}</h2>
             <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-950/50 p-4 rounded-xl border border-slate-100 dark:border-white/5">
               <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-500/20 border-2 border-indigo-200 dark:border-indigo-500/30 overflow-hidden flex items-center justify-center">
                 <span className="material-symbols-outlined text-indigo-400">person</span>
@@ -129,7 +131,7 @@ export default function EventDetails() {
 
         <div className="space-y-6">
           <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none rounded-2xl p-6 sticky top-28">
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Are you going?</h3>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-6">{t('events.are_you_going', 'Are you going?')}</h3>
             <div className="flex -space-x-4 mb-6">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-slate-900 bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center relative overflow-hidden shadow-sm">
@@ -150,9 +152,9 @@ export default function EventDetails() {
                   : 'bg-indigo-600  text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:scale-[1.02]'
               }`}>
               <span className="material-symbols-outlined">{isRsvped ? 'how_to_reg' : 'confirmation_number'}</span> 
-              {isRsvped ? "Kamu Sudah Terdaftar" : 'RSVP Now'}
+              {isRsvped ? t('events.already_registered', 'You are registered') : t('events.rsvp_now', 'RSVP Now')}
             </button>
-            <p className="text-center text-slate-500 text-xs mt-4 font-medium">Free for all members</p>
+            <p className="text-center text-slate-500 text-xs mt-4 font-medium">{t('events.free_for_members', 'Free for all members')}</p>
           </div>
         </div>
       </div>
@@ -162,42 +164,43 @@ export default function EventDetails() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-indigo-500/30 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl shadow-slate-900/10 dark:shadow-indigo-900/20 my-8 animate-[fadeIn_0.3s_ease-out]">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white font-['Space_Grotesk']">RSVP Registration</h3>
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white font-['Space_Grotesk']">{t('events.rsvp_registration', 'RSVP Registration')}</h3>
               <button onClick={() => setShowRegisterModal(false)} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             
             <div className="mb-6 p-4 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl border border-indigo-100 dark:border-indigo-500/20">
-              <h4 className="font-bold text-slate-900 dark:text-white text-lg">Galactic Art Showcase {id}</h4>
+              <h4 className="font-bold text-slate-900 dark:text-white text-lg">{eventData.title}</h4>
               <p className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2 mt-1">
-                <span className="material-symbols-outlined text-[16px]">calendar_month</span> OCT 24 • 8:00 PM EST
+                <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+                {new Date(eventData.startDateUtc).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
               </p>
               <div className="mt-3 inline-block px-3 py-1 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold uppercase tracking-wider">
-                Free for all members
+                {t('events.free_for_members', 'Free for all members')}
               </div>
             </div>
 
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nama Lengkap</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('events.full_name', 'Full Name')}</label>
                 <input
                   type="text"
                   value={formData.fullName}
                   onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                   className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all placeholder:text-slate-400"
-                  placeholder="Masukkan nama lengkap"
+                  placeholder={t('events.placeholder_full_name', 'Enter your full name')}
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Email</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('events.email', 'Email')}</label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                   className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 transition-all placeholder:text-slate-400"
-                  placeholder="Masukkan email aktif"
+                  placeholder={t('events.placeholder_email', 'Enter active email')}
                   required
                 />
               </div>
@@ -212,7 +215,7 @@ export default function EventDetails() {
                   required
                 />
                 <label htmlFor="agree" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer leading-tight">
-                  Saya setuju untuk menghadiri acara ini secara daring/luring sesuai jadwal yang telah ditentukan.
+                  {t('events.agree_attendance', 'I agree to attend this event online/offline according to the scheduled time.')}
                 </label>
               </div>
 
@@ -224,7 +227,7 @@ export default function EventDetails() {
                 {isSubmitting ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  <>Konfirmasi Pendaftaran</>
+                  <>{t('events.btn_confirm_registration', 'Confirm Registration')}</>
                 )}
               </button>
             </form>
@@ -241,20 +244,20 @@ export default function EventDetails() {
                 <span className="material-symbols-outlined text-4xl text-emerald-600 dark:text-emerald-400">check_circle</span>
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white text-center mb-4 font-['Space_Grotesk']">Success!</h3>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white text-center mb-4 font-['Space_Grotesk']">{t('events.rsvp_success_title', 'Success!')}</h3>
             <p className="text-slate-600 dark:text-slate-300 text-center mb-8">
-              Pendaftaran Anda berhasil! Tiket telah ditambahkan ke dashboard Anda.
+              {t('events.rsvp_success_desc', 'Your registration was successful! The ticket has been added to your dashboard.')}
             </p>
             <div className="flex flex-col gap-3">
               <button 
                 onClick={() => router.push('/dashboard?ticket=true')}
                 className="w-full py-3 bg-indigo-600  text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] flex justify-center items-center gap-2">
-                <span className="material-symbols-outlined">local_activity</span> Lihat Tiket Saya
+                <span className="material-symbols-outlined">local_activity</span> {t('events.btn_view_my_ticket', 'View My Ticket')}
               </button>
               <button 
                 onClick={() => setShowSuccessModal(false)}
                 className="w-full py-3 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-800 dark:text-white rounded-xl font-bold transition-colors">
-                Tutup
+                {t('events.btn_close', 'Close')}
               </button>
             </div>
           </div>

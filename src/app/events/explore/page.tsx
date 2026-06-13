@@ -2,6 +2,7 @@
 import Link from 'next/link';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '@/lib/api';
 
 interface Event {
@@ -15,6 +16,7 @@ interface Event {
 }
 
 export default function EventsExplore() {
+  const { t } = useTranslation();
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -35,14 +37,14 @@ export default function EventsExplore() {
   }, []);
 
   if (isLoading) {
-    return <div className="p-8 text-center text-slate-500">Loading events...</div>;
+    return <div className="p-8 text-center text-slate-500">{t('events.loading_events', 'Loading events...')}</div>;
   }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-10">
-        <h1 className="text-5xl font-bold text-slate-900 dark:text-white mb-2 font-['Space_Grotesk']">Explore Events</h1>
-        <p className="text-slate-600 dark:text-slate-400 text-lg">Discover upcoming virtual exhibitions, workshops, and artist meetups.</p>
+        <h1 className="text-5xl font-bold text-slate-900 dark:text-white mb-2 font-['Space_Grotesk']">{t('events.explore_title', 'Explore Events')}</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-lg">{t('events.explore_subtitle', 'Discover upcoming virtual exhibitions, workshops, and artist meetups.')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -63,21 +65,21 @@ export default function EventsExplore() {
               <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 line-clamp-1">{event.title}</h3>
               <p className="text-slate-600 dark:text-slate-400 text-sm mb-6 flex items-center gap-1 line-clamp-2">
                 <span className="material-symbols-outlined text-[16px]">{event.isOnline ? 'videocam' : 'location_on'}</span> 
-                {event.isOnline ? 'Virtual Exhibition' : event.location}
+                {event.isOnline ? t('events.virtual_exhibition', 'Virtual Exhibition') : event.location}
               </p>
               
               <div className="mt-auto">
                 <Link href={`/events/${event.id}`}
                   className="w-full py-2.5 bg-indigo-600  text-white rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-colors text-center block"
                 >
-                  RSVP Now
+                  {t('events.rsvp_now', 'RSVP Now')}
                 </Link>
               </div>
             </div>
           </div>
         )) : (
           <div className="col-span-full py-20 text-center text-slate-500">
-            <p>No upcoming events found.</p>
+            <p>{t('events.no_events_found', 'No upcoming events found.')}</p>
           </div>
         )}
       </div>
